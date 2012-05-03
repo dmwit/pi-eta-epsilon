@@ -1,0 +1,2 @@
+:set -i./src -i./tests
+:load Main
