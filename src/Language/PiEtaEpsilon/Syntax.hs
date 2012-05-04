@@ -10,40 +10,45 @@ import Data.Data
 import Data.Typeable
 import Test.QuickCheck
 
-data Type = Zero 
-          | One 
-          | Sum        Type Type 
-          | Product    Type Type 
-          | Negative   Type 
-          | Reciprocal Type 
-          deriving(Eq, Ord, Show, Read, Data, Typeable, Generic)
+data Type
+	= Zero
+	| One
+	| Sum        Type Type
+	| Product    Type Type
+	| Negative   Type
+	| Reciprocal Type
+	deriving(Eq, Ord, Show, Read, Data, Typeable, Generic)
 
-data Value = Unit 
-           | Left   Value 
-           | Right  Value 
-           | Tuple  Value Value 
-           | Negate Value 
-           | Reciprocate  Value 
-           | UnificationVariable Int Type deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
-           
+data Value
+	= Unit
+	| Left        Value
+	| Right       Value
+	| Tuple       Value Value
+	| Negate      Value
+	| Reciprocate Value
+	| UnificationVariable Int Type
+	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
+
 data IsoBase
 	= IdentityS Type | CommutativeS Type Type | AssociativeS Type Type Type
 	| IdentityP Type | CommutativeP Type Type | AssociativeP Type Type Type
 	| DistributiveZero Type
 	| DistributivePlus Type Type Type
 	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
-	
-data Iso = Eliminate IsoBase 
-         | Introduce IsoBase 
-         deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
 
-data Term = Base Iso 
-          | Id Type 
-          | Term ::: Term 
-          | Term :+: Term 
-          | Term :*: Term 
-          deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
-          
+data Iso
+	= Eliminate IsoBase
+	| Introduce IsoBase
+	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
+
+data Term
+	= Base Iso
+	| Id Type
+	| Term ::: Term
+	| Term :+: Term
+	| Term :*: Term
+	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
+
 ----------------------------------------------------------------------------------------------------
 ----------                          Arbitrary Instances                                  -----------
 ----------------------------------------------------------------------------------------------------
@@ -67,7 +72,7 @@ instance Arbitrary Type where
     shrink (Product x y)  = [x, y]
     shrink (Negative x)   = [x]
     shrink (Reciprocal x) = [x]
-    
+
 instance Arbitrary Value where
     arbitrary = sized arb' where
         arb' size = do
@@ -93,5 +98,3 @@ pprType (Sum     x y) = "(" ++ pprType x ++ " + " ++ pprType y ++ ")"
 pprType (Product x y) = "(" ++ pprType x ++ " * " ++ pprType y ++ ")"
 pprType (Negative   x) = "(" ++ " - " ++ pprType x ++ ")"
 pprType (Reciprocal x) = "(" ++ " / " ++ pprType x ++ ")"
-
-
