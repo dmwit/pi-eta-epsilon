@@ -17,7 +17,7 @@ data Type
 	| Product    Type Type
 	| Negative   Type
 	| Reciprocal Type
-	deriving(Eq, Ord, Show, Read, Data, Typeable, Generic)
+	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
 
 data Value
 	= Unit

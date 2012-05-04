@@ -7,17 +7,23 @@ import Control.Monad.Writer hiding (Product(..), Sum(..))
 import Prelude hiding (Either(..))
 import GHC.Generics hiding ((:*:))
 
+data Context
+	= Box
+	| Fst      Context Term       | Snd      Term       Context
+	| LProduct Context Term Value | RProduct Term Value Context
+	| LSum     Context Term       | RSum     Term       Context
+	deriving (Eq, Ord, Show, Read)
 
-data Context = Box | Fst Context Term | Snd Term Context | LProduct Context Term Value | RProduct Term Value Context | LSum Context Term | RSum Term Context deriving (Eq, Ord, Show, Read)
 data MachineState = MachineState
-	{ forward :: Bool
-	, descending :: Bool
-	, variable :: Int
-	, term :: Term
-	, output :: Value
-	, context :: Context
+	{ forward     :: Bool
+	, descending  :: Bool
+	, variable    :: Int
+	, term        :: Term
+	, output      :: Value
+	, context     :: Context
 	, constraints :: Constraints
 	} deriving (Eq, Ord, Show, Read)
+
 type Constraints = [(Value, Value)]
 type IsoM = StateT Int (WriterT Constraints [])
 
