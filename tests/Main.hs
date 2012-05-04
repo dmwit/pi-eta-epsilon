@@ -28,7 +28,7 @@ testParseType = mkParserTest parseType
 
 fromRight :: (Show a) => Either a b -> b
 fromRight (Prelude.Right x) = x
-fromRight (Prelude.Left x)         = error $ "okay heres what's wrong " ++ show x
+fromRight (Prelude.Left x)         = error $ "okay here's what's wrong " ++ show x
 
 roundTrip f g x = if (g $ f x) == x 
                     then True
@@ -39,19 +39,30 @@ roundTripBack f g x = result where
         result = if (f $ g y) == y
                     then True
                     else trace (show x) False 
+  
+
+sp' :: (x -> b -> c) -> (y -> z -> b) -> x -> y -> z ->  c
+sp' f g x y z = f x $ g y z 
+     
+sp f g (x, y, z) = sp' f g x y z
                              
 tests = [
-            testGroup "Type Parser" [
-                testCase "test_pZero"       $ testParseType "0"       Zero,
-                testCase "test_pOne"        $ testParseType "1"       One,
-                testCase "test_pSum"        $ testParseType "1 + 0" $ Sum        One Zero,
-                testCase "test_pProduct"    $ testParseType "1 * 0" $ Product    One Zero,
-                testCase "test_pNegative"   $ testParseType "- 1"   $ Negative   One,
-                testCase "test_pReciprocal" $ testParseType "/ 1"   $ Reciprocal One,
-                --properities
-                testProperty "a ppr type is a parsed type"   $ roundTrip     pprType (fromRight . parseType), 
-                testProperty "a parsed string is a ppr type" $ roundTripBack pprType (fromRight . parseType)  
-            ],
+            testGroup "Type Parser" $ concat [
+                    map (sp testCase testParseType) [
+                        ("test_pZero"       , "0",       Zero),
+                        ("test_pOne"        , "1",       One),
+                        ("test_pSum"        , "1 + 0", Sum        One Zero),
+                        ("test_pProduct"    , "1 * 0", Product    One Zero),
+                        ("test_pNegative"   , "- 1"  , Negative   One),
+                        ("test_pReciprocal" , "/ 1"  , Reciprocal One)
+                    ], 
+                    --properities
+                    [
+                        testProperty "a ppr type is a parsed type"   $ roundTrip     pprType (fromRight . parseType), 
+                        testProperty "a parsed string is a ppr type" $ roundTripBack pprType (fromRight . parseType)
+                    ]
+                ],
+                    
             testGroup "Type QuasiQuoter" [
                 testCase "test_expression_0" $ [typ| (1 + 0) * (1 * 1)|] @?= Product (Sum One Zero) (Product One One) 
             ]
