@@ -143,6 +143,10 @@ initialize t v = [MachineState {
 	constraints = []
 	}]
 
+isFinal :: MachineState -> Bool
+isFinal (MachineState { forward = True, descending = False, context = Box }) = True
+isFinal _ = False
+
 solveConstraints :: (Value, Constraints) -> [(Value, Constraints)]
 solveConstraints = undefined
 
