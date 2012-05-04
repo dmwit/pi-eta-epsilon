@@ -95,27 +95,3 @@ pprType (Negative   x) = "(" ++ " - " ++ pprType x ++ ")"
 pprType (Reciprocal x) = "(" ++ " / " ++ pprType x ++ ")"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

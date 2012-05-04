@@ -49,8 +49,8 @@ sp f g (x, y, z) = sp' f g x y z
 tests = [
             testGroup "Type Parser" $ concat [
                     map (sp testCase testParseType) [
-                        ("test_pZero"       , "0",       Zero),
-                        ("test_pOne"        , "1",       One),
+                        ("test_pZero"       , "0",     Zero),
+                        ("test_pOne"        , "1",     One),
                         ("test_pSum"        , "1 + 0", Sum        One Zero),
                         ("test_pProduct"    , "1 * 0", Product    One Zero),
                         ("test_pNegative"   , "- 1"  , Negative   One),
