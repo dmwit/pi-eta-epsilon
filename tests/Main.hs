@@ -16,9 +16,9 @@ import Language.PiEtaEpsilon
 import Debug.Trace
 
 
-main = quickCheck $ roundTrip pprType   (fromRight . parseType)
+--main = quickCheck $ roundTrip pprType   (fromRight . parseType)
 
---main = defaultMain tests
+main = defaultMain tests
 
 mkParserTest f input expected = case f input of
         Prelude.Right x -> x @?= expected
@@ -33,6 +33,12 @@ fromRight (Prelude.Left x)         = error $ "okay heres what's wrong " ++ show 
 roundTrip f g x = if (g $ f x) == x 
                     then True
                     else trace (show x) False
+
+roundTripBack f g x = result where
+        y = f x
+        result = if (f $ g y) == y
+                    then True
+                    else trace (show x) False 
                              
 tests = [
             testGroup "Type Parser" [
@@ -43,8 +49,8 @@ tests = [
                 testCase "test_pNegative"   $ testParseType "- 1"   $ Negative   One,
                 testCase "test_pReciprocal" $ testParseType "/ 1"   $ Reciprocal One,
                 --properities
-                testProperty "a ppr type is a parsed type"   $ roundTrip pprType   (fromRight . parseType), 
-                testProperty "a parsed string is a ppr type" $ roundTrip (fromRight . parseType) pprType  
+                testProperty "a ppr type is a parsed type"   $ roundTrip     pprType (fromRight . parseType), 
+                testProperty "a parsed string is a ppr type" $ roundTripBack pprType (fromRight . parseType)  
             ],
             testGroup "Type QuasiQuoter" [
                 testCase "test_expression_0" $ [typ| (1 + 0) * (1 * 1)|] @?= Product (Sum One Zero) (Product One One) 
