@@ -30,7 +30,6 @@ fromRight :: (Show a) => Either a b -> b
 fromRight (Prelude.Right x) = x
 fromRight (Prelude.Left x)         = error $ "okay heres what's wrong " ++ show x
 
---roundTrip :: (Arbitrary a, Arbitrary b, Eq a, Eq b) =>  (a -> b) -> (b -> a) -> a -> Bool
 roundTrip f g x = if (g $ f x) == x 
                     then True
                     else trace (show x) False
