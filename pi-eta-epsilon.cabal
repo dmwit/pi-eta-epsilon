@@ -1,0 +1,28 @@
+name:                pi-eta-epsilon
+version:             0.0
+synopsis:            An implementation of the paper, "The Two Dualities of Computation: Negative and Fractional Types" by Roshan James and Amr Saby
+homepage:            https://github.com/dmwit/pi-eta-epsilon
+license:             BSD3
+license-file:        LICENSE
+author:              Daniel Wagner, Jonathan Fischoff
+maintainer:          daniel@wagner-home.com
+category:            Language
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+  exposed-modules:     Language.PiEtaEpsilon,
+                       Language.PiEtaEpsilon.Evaluator,
+                       Language.PiEtaEpsilon.Parser,
+                       Language.PiEtaEpsilon.QuasiQuoter,
+                       Language.PiEtaEpsilon.Syntax
+  hs-source-dirs:      src
+  build-depends:       base >= 3 && < 5,
+                       ghc-prim >= 0.2 && < 0.3,
+                       logict >= 0.5 && < 0.6,
+                       mtl >= 2.0 && < 2.1,
+                       parsec >= 3.0 && < 3.2,
+                       QuickCheck >= 2.4 && < 2.5,
+                       template-haskell >= 2.7 && < 2.8,
+                       transformers >= 0.2 && < 0.3,
+                       unification-fd >= 0.7 && < 0.8
