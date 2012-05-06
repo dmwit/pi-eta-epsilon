@@ -138,8 +138,8 @@ stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 	Id     t  -> return m { descending = False }
 	t1 ::: t2 -> return m { term = t1, context = Fst (context m) t2 }
 	t1 :+: t2 -> newVariable >>= \v ->
-		    (equate v (left  (output m)) >> return m { term = t1, output = v, context = LSum (context m) t2 })
-		<|> (equate v (right (output m)) >> return m { term = t2, output = v, context = RSum t1 (context m) })
+		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
+		<|> (equate (right v) (output m) >> return m { term = t2, output = v, context = RSum t1 (context m) })
 	t1 :*: t2 -> do
 		v1 <- newVariable
 		v2 <- newVariable
@@ -168,8 +168,8 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 	Id     t  -> return m { descending = True }
 	t1 ::: t2 -> return m { term = t2, context = Snd t1 (context m) }
 	t1 :+: t2 -> newVariable >>= \v ->
-		    (equate v (left  (output m)) >> return m { term = t1, output = v, context = LSum (context m) t2 })
-		<|> (equate v (right (output m)) >> return m { term = t2, output = v, context = RSum t1 (context m) })
+		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
+		<|> (equate (right v) (output m) >> return m { term = t2, output = v, context = RSum t1 (context m) })
 	t1 :*: t2 -> do
 		v1 <- newVariable
 		v2 <- newVariable
