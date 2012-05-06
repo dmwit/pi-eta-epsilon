@@ -20,9 +20,9 @@ library
   build-depends:       base >= 3 && < 5,
                        ghc-prim >= 0.2 && < 0.3,
                        logict >= 0.5 && < 0.6,
-                       mtl >= 2.0 && < 2.1,
+                       mtl >= 2.0 && < 2.3,
                        parsec >= 3.0 && < 3.2,
                        QuickCheck >= 2.4 && < 2.5,
                        template-haskell >= 2.7 && < 2.8,
-                       transformers >= 0.2 && < 0.3,
+                       transformers >= 0.2 && < 0.4,
                        unification-fd >= 0.7 && < 0.8
