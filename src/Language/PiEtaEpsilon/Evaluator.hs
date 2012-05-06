@@ -1,4 +1,5 @@
 module Language.PiEtaEpsilon.Evaluator where
+import Language.PiEtaEpsilon.ConstraintSolver
 import Language.PiEtaEpsilon.Syntax
 import Control.Applicative
 import Control.Monad.State
@@ -24,7 +25,6 @@ data MachineState = MachineState
 	, constraints :: Constraints
 	} deriving (Eq, Ord, Show, Read)
 
-type Constraints = [(Value, Value)]
 type IsoM = StateT Int (WriterT Constraints [])
 
 adjointIso :: Iso -> Iso
@@ -71,17 +71,6 @@ newVariable t = do
 	next <- get
 	put (next+1)
 	return (UnificationVariable next t)
-
-equate :: Value -> Value -> IsoM ()
-equate Unit            Unit             = return ()
-equate (Left  v)       (Left  v')       = equate v v'
-equate (Right v)       (Right v')       = equate v v'
-equate (Tuple v1 v2)   (Tuple v1' v2')  = equate v1 v1' >> equate v2 v2'
-equate (Negate v)      (Negate v')      = equate v v'
-equate (Reciprocate v) (Reciprocate v') = equate v v'
-equate v@(UnificationVariable {}) v'    = tell [(v, v')]
-equate v v'@(UnificationVariable {})    = tell [(v', v)]
-equate _               _                = lift (lift [])
 
 evalIso :: Iso -> Value -> IsoM Value
 evalIso (Eliminate (IdentityS t)) v = newVariable t >>= \v' -> equate v (Right v') >> return v'
