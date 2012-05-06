@@ -3,8 +3,9 @@ module Language.PiEtaEpsilon.Evaluator where
 
 import Language.PiEtaEpsilon.Syntax
 import Control.Applicative
-import Control.Monad.Logic
 import Control.Monad.Error
+import Control.Monad.Logic
+import Control.Monad.Identity
 import Control.Monad.Trans.Identity
 import Control.Unification
 import Control.Unification.IntVar
@@ -29,6 +30,7 @@ data MachineState = MachineState
 	} deriving (Show)
 
 newtype PEET m a = PEET { unPEET :: IntBindingT ValueF (LogicT m) a }
+type PEE = PEET Identity
 deriving instance Functor     (PEET m)
 deriving instance Monad       (PEET m)
 deriving instance Applicative (PEET m)
@@ -38,6 +40,12 @@ instance MonadTrans PEET where lift m = PEET (lift (lift m))
 instance MonadError (UnificationFailure ValueF IntVar) (PEET m) where
 	throwError _ = empty -- throw away worlds where something doesn't unify
 	catchError   = error "catchError undefined for the PEET monad"
+
+runPEET :: Monad m => PEET m a -> m [a]
+runPEET = observeAllT . evalIntBindingT . unPEET
+
+runPEE :: PEE a -> [a]
+runPEE = runIdentity . runPEET
 
 instance Unifiable ValueF where
 	zipMatch  Unit               Unit              = Just  Unit
@@ -109,8 +117,8 @@ evalIso (Introduce (DistributivePlus t1 t2 t3)) v = newVariable >>= \v3 ->
 	    (newVariable >>= \v1 -> equate v (left  (tuple v1 v3)) >> return (tuple (left  v1) v3))
 	<|> (newVariable >>= \v2 -> equate v (right (tuple v2 v3)) >> return (tuple (right v2) v3))
 
-initialize :: Term -> UValue -> PEET m MachineState
-initialize t v = return MachineState {
+initialize :: Term -> UValue -> MachineState
+initialize t v = MachineState {
 	forward = True,
 	descending = True,
 	term = t,
@@ -167,3 +175,12 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 		v2 <- newVariable
 		equate (tuple v1 v2) (output m)
 		return m { term = t2, output = v2, context = RProduct t1 v1 (context m) }
+
+eval :: MachineState -> PEET m MachineState
+eval m
+	| isFinal m = freeze (output m) >>= \v -> return m { output = v }
+	| otherwise = stepEval m >>= eval
+	where freeze = runIdentityT . applyBindings
+
+topLevel :: Term -> UValue -> [UValue]
+topLevel t v = map output . runPEE . eval $ initialize t v
