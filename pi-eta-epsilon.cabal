@@ -23,6 +23,6 @@ library
                        mtl >= 2.0 && < 2.3,
                        parsec >= 3.0 && < 3.2,
                        QuickCheck >= 2.4 && < 2.5,
-                       template-haskell >= 2.7 && < 2.8,
+                       template-haskell >= 2.6 && < 2.8,
                        transformers >= 0.2 && < 0.4,
                        unification-fd >= 0.7 && < 0.8
