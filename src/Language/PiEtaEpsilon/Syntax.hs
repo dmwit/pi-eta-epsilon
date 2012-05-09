@@ -39,10 +39,9 @@ type Value = Fix ValueF
 
 -- isomorphisms {{{2
 data IsoBase
-	= IdentityS Type | CommutativeS Type Type | AssociativeS Type Type Type
-	| IdentityP Type | CommutativeP Type Type | AssociativeP Type Type Type
-	| DistributiveZero Type
-	| DistributivePlus Type Type Type
+	= IdentityS | CommutativeS | AssociativeS
+	| IdentityP | CommutativeP | AssociativeP
+	| DistributiveZero | DistributivePlus
 	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
 
 data Iso
@@ -53,7 +52,7 @@ data Iso
 -- Term {{{2
 data Term
 	= Base Iso
-	| Id Type
+	| Id
 	| Term ::: Term
 	| Term :+: Term
 	| Term :*: Term

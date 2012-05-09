@@ -62,7 +62,7 @@ adjointIso (Introduce b) = Eliminate b
 
 adjoint :: Term -> Term
 adjoint (Base iso)  = Base (adjointIso iso)
-adjoint (Id   t  )  = Id t
+adjoint  Id         = Id
 adjoint (t1 ::: t2) = adjoint t2 ::: adjoint t1
 adjoint (t1 :+: t2) = adjoint t1 :+: adjoint t2
 adjoint (t1 :*: t2) = adjoint t1 :*: adjoint t2
@@ -74,46 +74,46 @@ newVariable :: BindingMonad t v m => m (UTerm t' v)
 newVariable = var <$> freeVar
 
 evalIso :: Iso -> UValue -> PEET m UValue
-evalIso (Eliminate (IdentityS t)) v = newVariable >>= \v' -> equate v (right v') >> return v'
-evalIso (Introduce (IdentityS t)) v = return (right v)
-evalIso (Eliminate (CommutativeS t1 t2)) v =
+evalIso (Eliminate IdentityS) v = newVariable >>= \v' -> equate v (right v') >> return v'
+evalIso (Introduce IdentityS) v = return (right v)
+evalIso (Eliminate CommutativeS) v =
 	    (newVariable >>= \v' -> equate v (left  v') >> return (right v'))
 	<|> (newVariable >>= \v' -> equate v (right v') >> return (left  v'))
-evalIso (Introduce (CommutativeS t1 t2)) v = evalIso (Eliminate (CommutativeS t2 t1)) v
-evalIso (Eliminate (AssociativeS t1 t2 t3)) v =
+evalIso (Introduce CommutativeS) v = evalIso (Eliminate CommutativeS) v
+evalIso (Eliminate AssociativeS) v =
 	    (newVariable >>= \v1 -> equate v (left         v1 ) >> return (left (left  v1)))
 	<|> (newVariable >>= \v2 -> equate v (right (left  v2)) >> return (left (right v2)))
 	<|> (newVariable >>= \v3 -> equate v (right (right v3)) >> return (right       v3 ))
-evalIso (Introduce (AssociativeS t1 t2 t3)) v =
+evalIso (Introduce AssociativeS) v =
 	    (newVariable >>= \v1 -> equate v (left (left  v1)) >> return (left         v1 ))
 	<|> (newVariable >>= \v2 -> equate v (left (right v2)) >> return (right (left  v2)))
 	<|> (newVariable >>= \v3 -> equate v (right       v3 ) >> return (right (right v3)))
-evalIso (Eliminate (IdentityP t)) v = newVariable >>= \v' -> equate v (tuple unit v') >> return v'
-evalIso (Introduce (IdentityP t)) v = return (tuple unit v)
-evalIso (Eliminate (CommutativeP t1 t2)) v = do
+evalIso (Eliminate IdentityP) v = newVariable >>= \v' -> equate v (tuple unit v') >> return v'
+evalIso (Introduce IdentityP) v = return (tuple unit v)
+evalIso (Eliminate CommutativeP) v = do
 	v1 <- newVariable
 	v2 <- newVariable
 	equate v (tuple v1 v2)
 	return (tuple v2 v1)
-evalIso (Introduce (CommutativeP t1 t2)) v = evalIso (Eliminate (CommutativeP t2 t1)) v
-evalIso (Eliminate (AssociativeP t1 t2 t3)) v = do
+evalIso (Introduce CommutativeP) v = evalIso (Eliminate CommutativeP) v
+evalIso (Eliminate AssociativeP) v = do
 	v1 <- newVariable
 	v2 <- newVariable
 	v3 <- newVariable
 	equate v (tuple v1 (tuple v2 v3))
 	return (tuple (tuple v1 v2) v3)
-evalIso (Introduce (AssociativeP t1 t2 t3)) v = do
+evalIso (Introduce AssociativeP) v = do
 	v1 <- newVariable
 	v2 <- newVariable
 	v3 <- newVariable
 	equate v (tuple (tuple v1 v2) v3)
 	return (tuple v1 (tuple v2 v3))
-evalIso (Introduce (DistributiveZero t)) v = empty
-evalIso (Eliminate (DistributiveZero t)) v = empty
-evalIso (Eliminate (DistributivePlus t1 t2 t3)) v = newVariable >>= \v3 ->
+evalIso (Introduce DistributiveZero) v = empty
+evalIso (Eliminate DistributiveZero) v = empty
+evalIso (Eliminate DistributivePlus) v = newVariable >>= \v3 ->
 	    (newVariable >>= \v1 -> equate v (tuple (left  v1) v3) >> return (left  (tuple v1 v3)))
 	<|> (newVariable >>= \v2 -> equate v (tuple (right v2) v3) >> return (right (tuple v2 v3)))
-evalIso (Introduce (DistributivePlus t1 t2 t3)) v = newVariable >>= \v3 ->
+evalIso (Introduce DistributivePlus) v = newVariable >>= \v3 ->
 	    (newVariable >>= \v1 -> equate v (left  (tuple v1 v3)) >> return (tuple (left  v1) v3))
 	<|> (newVariable >>= \v2 -> equate v (right (tuple v2 v3)) >> return (tuple (right v2) v3))
 
@@ -135,7 +135,7 @@ stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 	Base iso  -> do
 		v <- evalIso iso (output m)
 		return m { descending = False, output = v }
-	Id     t  -> return m { descending = False }
+	Id        -> return m { descending = False }
 	t1 ::: t2 -> return m { term = t1, context = Fst (context m) t2 }
 	t1 :+: t2 -> newVariable >>= \v ->
 		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
@@ -165,7 +165,7 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 	Base iso  -> do
 		v <- evalIso (adjointIso iso) (output m)
 		return m { descending = True, output = v }
-	Id     t  -> return m { descending = True }
+	Id        -> return m { descending = True }
 	t1 ::: t2 -> return m { term = t2, context = Snd t1 (context m) }
 	t1 :+: t2 -> newVariable >>= \v ->
 		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
