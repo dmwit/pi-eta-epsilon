@@ -73,12 +73,12 @@ newVariable = var <$> freeVar
 -- The type signatures are scarier than the implementations.  The basic idea is
 -- to assert that the v argument has the head form given by f, extract the
 -- holes in the head given by f, and apply the new head form given by f' to the
--- values in the holes.  For example, "transform left right v" turns (Left v)
+-- values in the holes.  For example, "transform1 left right v" turns (Left v)
 -- into (Right v) and fails on any value that definitely doesn't have "Left" at
 -- the front.
-transform0 t t' v = runIdentityT (v =:= t) >> return t'
-transform  f f' v = newVariable >>= \v' -> transform0 (f v') (f' v') v
-transform2 f f' v = newVariable >>= \v' -> transform  (f v') (f' v') v
+transform0 f f' v = runIdentityT (v =:= f) >> return f'
+transform1 f f' v = newVariable >>= \v' -> transform0 (f v') (f' v') v
+transform2 f f' v = newVariable >>= \v' -> transform1 (f v') (f' v') v
 transform3 f f' v = newVariable >>= \v' -> transform2 (f v') (f' v') v
 
 tripleL, tripleR :: Particle a => a -> a -> a -> a
@@ -86,22 +86,22 @@ tripleL v1 v2 v3 = tuple (tuple v1 v2) v3
 tripleR v1 v2 v3 = tuple v1 (tuple v2 v3)
 
 evalIso :: Iso -> UValue -> PEET m UValue
-evalIso (Eliminate IdentityS   ) v = transform right id v
-evalIso (Introduce IdentityS   ) v = transform id right v
-evalIso (Eliminate CommutativeS) v = transform left right v <|> transform right left v
-evalIso (Introduce CommutativeS) v = transform left right v <|> transform right left v
+evalIso (Eliminate IdentityS   ) v = transform1 right id v
+evalIso (Introduce IdentityS   ) v = transform1 id right v
+evalIso (Eliminate CommutativeS) v = transform1 left right v <|> transform1 right left v
+evalIso (Introduce CommutativeS) v = transform1 left right v <|> transform1 right left v
 evalIso (Eliminate AssociativeS) v =
-	    transform  left           (left . left ) v
-	<|> transform (right . left ) (left . right) v
-	<|> transform (right . right)  right         v
+	    transform1  left           (left . left ) v
+	<|> transform1 (right . left ) (left . right) v
+	<|> transform1 (right . right)  right         v
 evalIso (Introduce AssociativeS) v =
-	    transform (left . left )  left           v
-	<|> transform (left . right) (right . left ) v
-	<|> transform  right         (right . right) v
+	    transform1 (left . left )  left           v
+	<|> transform1 (left . right) (right . left ) v
+	<|> transform1  right         (right . right) v
 evalIso (Eliminate SplitS      ) v = error "the impossible happened: stepEval passed an eta+ off to evalIso"
 evalIso (Introduce SplitS      ) v = error "the impossible happened: stepEval passed an epsilon+ off to evalIso"
-evalIso (Eliminate IdentityP   ) v = transform (tuple unit) id v
-evalIso (Introduce IdentityP   ) v = transform id (tuple unit) v
+evalIso (Eliminate IdentityP   ) v = transform1 (tuple unit) id v
+evalIso (Introduce IdentityP   ) v = transform1 id (tuple unit) v
 evalIso (Eliminate CommutativeP) v = transform2 tuple (flip tuple) v
 evalIso (Introduce CommutativeP) v = transform2 tuple (flip tuple) v
 evalIso (Eliminate AssociativeP) v = transform3 tripleR tripleL v
@@ -134,16 +134,16 @@ stepEval :: MachineState -> PEET m MachineState
 stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 	Base (Eliminate SplitS) -> empty
 	Base (Introduce SplitS) -> do
-		v <-     transform right (left . reciprocate) (output m)
-		     <|> transform (left . reciprocate) right (output m)
+		v <-     transform1 right (left . reciprocate) (output m)
+		     <|> transform1 (left . reciprocate) right (output m)
 		return m { output = v, forward = False }
 	Base iso  -> do
 		v <- evalIso iso (output m)
 		return m { descending = False, output = v }
 	Id        -> return m { descending = False }
 	t1 ::: t2 -> return m { term = t1, context = Fst (context m) t2 }
-	t1 :+: t2 -> transform  left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
-	         <|> transform  right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
+	t1 :+: t2 -> transform1 left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
+	         <|> transform1 right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
 	t1 :*: t2 -> transform2 tuple (\v1 v2 -> m { term = t1, output = v1, context = LProduct (context m) t2 v2 }) (output m)
 stepEval m@(MachineState { forward = True, descending = False }) = case context m of
 	Box -> empty
@@ -163,8 +163,8 @@ stepEval m@(MachineState { forward = False, descending = True }) = case context 
 	RProduct t v cxt -> return m { descending = False, term = t, output = v, context = LProduct cxt (term m) (output m) }
 stepEval m@(MachineState { forward = False, descending = False }) = case term m of
 	Base (Eliminate SplitS) -> do
-		v <-     transform right (left . reciprocate) (output m)
-		     <|> transform (left . reciprocate) right (output m)
+		v <-     transform1 right (left . reciprocate) (output m)
+		     <|> transform1 (left . reciprocate) right (output m)
 		return m { output = v, forward = True }
 	Base (Introduce SplitS) -> empty
 	Base iso  -> do
@@ -172,8 +172,8 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 		return m { descending = True, output = v }
 	Id        -> return m { descending = True }
 	t1 ::: t2 -> return m { term = t2, context = Snd t1 (context m) }
-	t1 :+: t2 -> transform  left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
-	         <|> transform  right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
+	t1 :+: t2 -> transform1 left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
+	         <|> transform1 right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
 	t1 :*: t2 -> transform2 tuple (\v1 v2 -> m { term = t2, output = v2, context = RProduct t1 v1 (context m) }) (output m)
 
 eval :: MachineState -> PEET m MachineState
