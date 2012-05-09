@@ -9,7 +9,7 @@ import Control.Monad.Identity
 import Control.Monad.Trans.Identity
 import Control.Unification
 import Control.Unification.IntVar
-import Prelude hiding (Either(..))
+import Prelude hiding (Either(..), negate)
 import GHC.Generics hiding ((:*:))
 
 type UValue = UTerm ValueF IntVar
@@ -134,8 +134,8 @@ stepEval :: MachineState -> PEET m MachineState
 stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 	Base (Eliminate SplitS) -> empty
 	Base (Introduce SplitS) -> do
-		v <-     transform1 right (left . reciprocate) (output m)
-		     <|> transform1 (left . reciprocate) right (output m)
+		v <-     transform1 right (left . negate) (output m)
+		     <|> transform1 (left . negate) right (output m)
 		return m { output = v, forward = False }
 	Base iso  -> do
 		v <- evalIso iso (output m)
@@ -163,8 +163,8 @@ stepEval m@(MachineState { forward = False, descending = True }) = case context 
 	RProduct t v cxt -> return m { descending = False, term = t, output = v, context = LProduct cxt (term m) (output m) }
 stepEval m@(MachineState { forward = False, descending = False }) = case term m of
 	Base (Eliminate SplitS) -> do
-		v <-     transform1 right (left . reciprocate) (output m)
-		     <|> transform1 (left . reciprocate) right (output m)
+		v <-     transform1 right (left . negate) (output m)
+		     <|> transform1 (left . negate) right (output m)
 		return m { output = v, forward = True }
 	Base (Introduce SplitS) -> empty
 	Base iso  -> do
