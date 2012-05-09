@@ -67,55 +67,50 @@ adjoint (t1 ::: t2) = adjoint t2 ::: adjoint t1
 adjoint (t1 :+: t2) = adjoint t1 :+: adjoint t2
 adjoint (t1 :*: t2) = adjoint t1 :*: adjoint t2
 
-equate :: (MonadError (UnificationFailure t v) m, BindingMonad t v m) => UTerm t v -> UTerm t v -> m (UTerm t v)
-equate t t' = runIdentityT (t =:= t')
-
 newVariable :: BindingMonad t v m => m (UTerm t' v)
 newVariable = var <$> freeVar
 
+-- The type signatures are scarier than the implementations.  The basic idea is
+-- to assert that the v argument has the head form given by f, extract the
+-- holes in the head given by f, and apply the new head form given by f' to the
+-- values in the holes.  For example, "transform left right v" turns (Left v)
+-- into (Right v) and fails on any value that definitely doesn't have "Left" at
+-- the front.
+transform  f f' v = newVariable >>= \v' -> runIdentityT (v =:= f v') >> return (f' v')
+transform2 f f' v = newVariable >>= \v' -> transform  (f v') (f' v') v
+transform3 f f' v = newVariable >>= \v' -> transform2 (f v') (f' v') v
+
+tripleL, tripleR :: Particle a => a -> a -> a -> a
+tripleL v1 v2 v3 = tuple (tuple v1 v2) v3
+tripleR v1 v2 v3 = tuple v1 (tuple v2 v3)
+
 evalIso :: Iso -> UValue -> PEET m UValue
-evalIso (Eliminate IdentityS) v = newVariable >>= \v' -> equate v (right v') >> return v'
-evalIso (Introduce IdentityS) v = return (right v)
-evalIso (Eliminate CommutativeS) v =
-	    (newVariable >>= \v' -> equate v (left  v') >> return (right v'))
-	<|> (newVariable >>= \v' -> equate v (right v') >> return (left  v'))
-evalIso (Introduce CommutativeS) v = evalIso (Eliminate CommutativeS) v
+evalIso (Eliminate IdentityS   ) v = transform right id v
+evalIso (Introduce IdentityS   ) v = transform id right v
+evalIso (Eliminate CommutativeS) v = transform left right v <|> transform right left v
+evalIso (Introduce CommutativeS) v = transform left right v <|> transform right left v
 evalIso (Eliminate AssociativeS) v =
-	    (newVariable >>= \v1 -> equate v (left         v1 ) >> return (left (left  v1)))
-	<|> (newVariable >>= \v2 -> equate v (right (left  v2)) >> return (left (right v2)))
-	<|> (newVariable >>= \v3 -> equate v (right (right v3)) >> return (right       v3 ))
+	    transform  left           (left . left ) v
+	<|> transform (right . left ) (left . right) v
+	<|> transform (right . right)  right         v
 evalIso (Introduce AssociativeS) v =
-	    (newVariable >>= \v1 -> equate v (left (left  v1)) >> return (left         v1 ))
-	<|> (newVariable >>= \v2 -> equate v (left (right v2)) >> return (right (left  v2)))
-	<|> (newVariable >>= \v3 -> equate v (right       v3 ) >> return (right (right v3)))
-evalIso (Eliminate IdentityP) v = newVariable >>= \v' -> equate v (tuple unit v') >> return v'
-evalIso (Introduce IdentityP) v = return (tuple unit v)
-evalIso (Eliminate CommutativeP) v = do
-	v1 <- newVariable
-	v2 <- newVariable
-	equate v (tuple v1 v2)
-	return (tuple v2 v1)
-evalIso (Introduce CommutativeP) v = evalIso (Eliminate CommutativeP) v
-evalIso (Eliminate AssociativeP) v = do
-	v1 <- newVariable
-	v2 <- newVariable
-	v3 <- newVariable
-	equate v (tuple v1 (tuple v2 v3))
-	return (tuple (tuple v1 v2) v3)
-evalIso (Introduce AssociativeP) v = do
-	v1 <- newVariable
-	v2 <- newVariable
-	v3 <- newVariable
-	equate v (tuple (tuple v1 v2) v3)
-	return (tuple v1 (tuple v2 v3))
-evalIso (Introduce DistributiveZero) v = empty
+	    transform (left . left )  left           v
+	<|> transform (left . right) (right . left ) v
+	<|> transform  right         (right . right) v
+evalIso (Eliminate IdentityP   ) v = transform (tuple unit) id v
+evalIso (Introduce IdentityP   ) v = transform id (tuple unit) v
+evalIso (Eliminate CommutativeP) v = transform2 tuple (flip tuple) v
+evalIso (Introduce CommutativeP) v = transform2 tuple (flip tuple) v
+evalIso (Eliminate AssociativeP) v = transform3 tripleR tripleL v
+evalIso (Introduce AssociativeP) v = transform3 tripleL tripleR v
 evalIso (Eliminate DistributiveZero) v = empty
-evalIso (Eliminate DistributivePlus) v = newVariable >>= \v3 ->
-	    (newVariable >>= \v1 -> equate v (tuple (left  v1) v3) >> return (left  (tuple v1 v3)))
-	<|> (newVariable >>= \v2 -> equate v (tuple (right v2) v3) >> return (right (tuple v2 v3)))
-evalIso (Introduce DistributivePlus) v = newVariable >>= \v3 ->
-	    (newVariable >>= \v1 -> equate v (left  (tuple v1 v3)) >> return (tuple (left  v1) v3))
-	<|> (newVariable >>= \v2 -> equate v (right (tuple v2 v3)) >> return (tuple (right v2) v3))
+evalIso (Introduce DistributiveZero) v = empty
+evalIso (Eliminate DistributivePlus) v =
+	    transform2 (\v1 v3 -> tuple (left  v1) v3) (\v1 v3 -> left  (tuple v1 v3)) v
+	<|> transform2 (\v2 v3 -> tuple (right v2) v3) (\v2 v3 -> right (tuple v2 v3)) v
+evalIso (Introduce DistributivePlus) v =
+	    transform2 (\v1 v3 -> left  (tuple v1 v3)) (\v1 v3 -> tuple (left  v1) v3) v
+	<|> transform2 (\v2 v3 -> right (tuple v2 v3)) (\v2 v3 -> tuple (right v2) v3) v
 
 initialize :: Term -> UValue -> MachineState
 initialize t v = MachineState {
@@ -137,14 +132,9 @@ stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 		return m { descending = False, output = v }
 	Id        -> return m { descending = False }
 	t1 ::: t2 -> return m { term = t1, context = Fst (context m) t2 }
-	t1 :+: t2 -> newVariable >>= \v ->
-		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
-		<|> (equate (right v) (output m) >> return m { term = t2, output = v, context = RSum t1 (context m) })
-	t1 :*: t2 -> do
-		v1 <- newVariable
-		v2 <- newVariable
-		equate (tuple v1 v2) (output m)
-		return m { term = t1, output = v1, context = LProduct (context m) t2 v2 }
+	t1 :+: t2 -> transform  left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
+	         <|> transform  right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
+	t1 :*: t2 -> transform2 tuple (\v1 v2 -> m { term = t1, output = v1, context = LProduct (context m) t2 v2 }) (output m)
 stepEval m@(MachineState { forward = True, descending = False }) = case context m of
 	Box -> empty
 	Fst  cxt t -> return m { descending = True, term = t, context = Snd (term m) cxt }
@@ -167,14 +157,9 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 		return m { descending = True, output = v }
 	Id        -> return m { descending = True }
 	t1 ::: t2 -> return m { term = t2, context = Snd t1 (context m) }
-	t1 :+: t2 -> newVariable >>= \v ->
-		    (equate (left  v) (output m) >> return m { term = t1, output = v, context = LSum (context m) t2 })
-		<|> (equate (right v) (output m) >> return m { term = t2, output = v, context = RSum t1 (context m) })
-	t1 :*: t2 -> do
-		v1 <- newVariable
-		v2 <- newVariable
-		equate (tuple v1 v2) (output m)
-		return m { term = t2, output = v2, context = RProduct t1 v1 (context m) }
+	t1 :+: t2 -> transform  left  (\v     -> m { term = t1, output = v , context = LSum (context m) t2        }) (output m)
+	         <|> transform  right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
+	t1 :*: t2 -> transform2 tuple (\v1 v2 -> m { term = t2, output = v2, context = RProduct t1 v1 (context m) }) (output m)
 
 eval :: MachineState -> PEET m MachineState
 eval m
