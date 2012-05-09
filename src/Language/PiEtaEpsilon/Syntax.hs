@@ -39,8 +39,8 @@ type Value = Fix ValueF
 
 -- isomorphisms {{{2
 data IsoBase
-	= IdentityS | CommutativeS | AssociativeS
-	| IdentityP | CommutativeP | AssociativeP
+	= IdentityS | CommutativeS | AssociativeS | SplitS
+	| IdentityP | CommutativeP | AssociativeP | SplitP
 	| DistributiveZero | DistributivePlus
 	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
 

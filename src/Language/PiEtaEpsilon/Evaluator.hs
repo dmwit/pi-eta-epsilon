@@ -76,7 +76,8 @@ newVariable = var <$> freeVar
 -- values in the holes.  For example, "transform left right v" turns (Left v)
 -- into (Right v) and fails on any value that definitely doesn't have "Left" at
 -- the front.
-transform  f f' v = newVariable >>= \v' -> runIdentityT (v =:= f v') >> return (f' v')
+transform0 t t' v = runIdentityT (v =:= t) >> return t'
+transform  f f' v = newVariable >>= \v' -> transform0 (f v') (f' v') v
 transform2 f f' v = newVariable >>= \v' -> transform  (f v') (f' v') v
 transform3 f f' v = newVariable >>= \v' -> transform2 (f v') (f' v') v
 
@@ -97,12 +98,16 @@ evalIso (Introduce AssociativeS) v =
 	    transform (left . left )  left           v
 	<|> transform (left . right) (right . left ) v
 	<|> transform  right         (right . right) v
+evalIso (Eliminate SplitS      ) v = error "the impossible happened: stepEval passed an eta+ off to evalIso"
+evalIso (Introduce SplitS      ) v = error "the impossible happened: stepEval passed an epsilon+ off to evalIso"
 evalIso (Eliminate IdentityP   ) v = transform (tuple unit) id v
 evalIso (Introduce IdentityP   ) v = transform id (tuple unit) v
 evalIso (Eliminate CommutativeP) v = transform2 tuple (flip tuple) v
 evalIso (Introduce CommutativeP) v = transform2 tuple (flip tuple) v
 evalIso (Eliminate AssociativeP) v = transform3 tripleR tripleL v
 evalIso (Introduce AssociativeP) v = transform3 tripleL tripleR v
+evalIso (Eliminate SplitP      ) v = newVariable >>= \v' -> transform0 unit (tuple (reciprocate v') v') v
+evalIso (Introduce SplitP      ) v = newVariable >>= \v' -> transform0 (tuple (reciprocate v') v') unit v
 evalIso (Eliminate DistributiveZero) v = empty
 evalIso (Introduce DistributiveZero) v = empty
 evalIso (Eliminate DistributivePlus) v =
@@ -127,6 +132,11 @@ isFinal _ = False
 
 stepEval :: MachineState -> PEET m MachineState
 stepEval m@(MachineState { forward = True, descending = True }) = case term m of
+	Base (Eliminate SplitS) -> empty
+	Base (Introduce SplitS) -> do
+		v <-     transform right (left . reciprocate) (output m)
+		     <|> transform (left . reciprocate) right (output m)
+		return m { output = v, forward = False }
 	Base iso  -> do
 		v <- evalIso iso (output m)
 		return m { descending = False, output = v }
@@ -152,6 +162,11 @@ stepEval m@(MachineState { forward = False, descending = True }) = case context 
 	LProduct cxt t v -> return m { term = term m :*: t, output = tuple (output m) v, context = cxt }
 	RProduct t v cxt -> return m { descending = False, term = t, output = v, context = LProduct cxt (term m) (output m) }
 stepEval m@(MachineState { forward = False, descending = False }) = case term m of
+	Base (Eliminate SplitS) -> do
+		v <-     transform right (left . reciprocate) (output m)
+		     <|> transform (left . reciprocate) right (output m)
+		return m { output = v, forward = True }
+	Base (Introduce SplitS) -> empty
 	Base iso  -> do
 		v <- evalIso (adjointIso iso) (output m)
 		return m { descending = True, output = v }
