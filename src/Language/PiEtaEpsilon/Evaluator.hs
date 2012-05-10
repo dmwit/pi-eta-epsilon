@@ -1,3 +1,4 @@
+-- boilerplate {{{1
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, StandaloneDeriving #-}
 module Language.PiEtaEpsilon.Evaluator where
 
@@ -12,6 +13,8 @@ import Control.Unification.IntVar
 import Prelude hiding (Either(..), negate)
 import GHC.Generics hiding ((:*:))
 
+-- types {{{1
+-- UValue, Context, MachineState {{{2
 type UValue = UTerm ValueF IntVar
 
 data Context
@@ -29,6 +32,7 @@ data MachineState = MachineState
 	, context     :: Context
 	} deriving (Show)
 
+-- PEET {{{2
 newtype PEET m a = PEET { unPEET :: IntBindingT ValueF (LogicT m) a }
 type PEE = PEET Identity
 deriving instance Functor     (PEET m)
@@ -47,6 +51,7 @@ runPEET = observeAllT . evalIntBindingT . unPEET
 runPEE :: PEE a -> [a]
 runPEE = runIdentity . runPEET
 
+-- unification for UValues {{{1
 instance Unifiable ValueF where
 	zipMatch  Unit               Unit              = Just  Unit
 	zipMatch (Left        a   ) (Left        b   ) = Just (Left        (a, b)         )
@@ -56,17 +61,8 @@ instance Unifiable ValueF where
 	zipMatch (Reciprocate a   ) (Reciprocate b   ) = Just (Reciprocate (a, b)         )
 	zipMatch _ _ = Nothing
 
-adjointIso :: Iso -> Iso
-adjointIso (Eliminate b) = Introduce b
-adjointIso (Introduce b) = Eliminate b
-
-adjoint :: Term -> Term
-adjoint (Base iso)  = Base (adjointIso iso)
-adjoint  Id         = Id
-adjoint (t1 ::: t2) = adjoint t2 ::: adjoint t1
-adjoint (t1 :+: t2) = adjoint t1 :+: adjoint t2
-adjoint (t1 :*: t2) = adjoint t1 :*: adjoint t2
-
+-- evaluation {{{1
+-- misc {{{2
 newVariable :: BindingMonad t v m => m (UTerm t' v)
 newVariable = var <$> freeVar
 
@@ -85,6 +81,20 @@ tripleL, tripleR :: Particle a => a -> a -> a -> a
 tripleL v1 v2 v3 = tuple (tuple v1 v2) v3
 tripleR v1 v2 v3 = tuple v1 (tuple v2 v3)
 
+initialize :: Term -> UValue -> MachineState
+initialize t v = MachineState {
+	forward = True,
+	descending = True,
+	term = t,
+	output = v,
+	context = Box
+	}
+
+isFinal :: MachineState -> Bool
+isFinal (MachineState { forward = True, descending = False, context = Box }) = True
+isFinal _ = False
+
+-- evaluation of isomorphisms {{{2
 evalIso :: Iso -> UValue -> PEET m UValue
 evalIso (Eliminate IdentityS   ) v = transform1 right id v
 evalIso (Introduce IdentityS   ) v = transform1 id right v
@@ -117,19 +127,7 @@ evalIso (Introduce DistributivePlus) v =
 	    transform2 (\v1 v3 -> left  (tuple v1 v3)) (\v1 v3 -> tuple (left  v1) v3) v
 	<|> transform2 (\v2 v3 -> right (tuple v2 v3)) (\v2 v3 -> tuple (right v2) v3) v
 
-initialize :: Term -> UValue -> MachineState
-initialize t v = MachineState {
-	forward = True,
-	descending = True,
-	term = t,
-	output = v,
-	context = Box
-	}
-
-isFinal :: MachineState -> Bool
-isFinal (MachineState { forward = True, descending = False, context = Box }) = True
-isFinal _ = False
-
+-- evaluation of terms {{{2
 stepEval :: MachineState -> PEET m MachineState
 stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 	Base (Eliminate SplitS) -> empty
@@ -176,6 +174,7 @@ stepEval m@(MachineState { forward = False, descending = False }) = case term m 
 	         <|> transform1 right (\v     -> m { term = t2, output = v , context = RSum t1 (context m)        }) (output m)
 	t1 :*: t2 -> transform2 tuple (\v1 v2 -> m { term = t2, output = v2, context = RProduct t1 v1 (context m) }) (output m)
 
+-- drivers {{{2
 eval :: MachineState -> PEET m MachineState
 eval m
 	| isFinal m = freeze (output m) >>= \v -> return m { output = v }
@@ -185,6 +184,13 @@ eval m
 topLevel :: Term -> UValue -> [UValue]
 topLevel t v = map output . runPEE . eval $ initialize t v
 
+nSteps :: Term -> UValue -> Int -> [(MachineState, IntBindingState ValueF)]
+nSteps t v n = observeAll . runIntBindingT . unPEET $ do
+	m <- (iterate (stepEval >=>) return !! n) (initialize t v)
+	v <- runIdentityT . applyBindings . output $ m
+	return m { output = v }
+
+-- pretty printer {{{1
 instance PPrint UValue  where ppr = show
 instance PPrint Context where
 	ppr = go id where
@@ -207,9 +213,3 @@ instance PPrint MachineState where
 		, if descending m then ">" else "]"
 		, if forward m then "|>" else "<|"
 		]
-
-nSteps :: Term -> UValue -> Int -> [(MachineState, IntBindingState ValueF)]
-nSteps t v n = observeAll . runIntBindingT . unPEET $ do
-	m <- (iterate (stepEval >=>) return !! n) (initialize t v)
-	v <- runIdentityT . applyBindings . output $ m
-	return m { output = v }

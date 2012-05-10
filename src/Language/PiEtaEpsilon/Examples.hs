@@ -1,7 +1,6 @@
 module Language.PiEtaEpsilon.Examples where
 
 import Language.PiEtaEpsilon.Syntax
-import Language.PiEtaEpsilon.Evaluator
 
 notIso = Base (Eliminate CommutativeS)
 traceS f = prepare ::: (Id :+: f) ::: adjoint prepare where prepare = Base (Introduce IdentityS) ::: (Base (Eliminate SplitS) :+: Id) ::: Base (Introduce AssociativeS)
