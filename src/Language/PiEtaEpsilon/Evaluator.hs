@@ -148,7 +148,7 @@ stepEval m@(MachineState { forward = True, descending = True }) = case term m of
 stepEval m@(MachineState { forward = True, descending = False }) = case context m of
 	Box -> empty
 	Fst  cxt t -> return m { descending = True, term = t, context = Snd (term m) cxt }
-	Snd  t cxt -> return m { term = term m ::: t, context = cxt }
+	Snd  t cxt -> return m { term = t ::: term m, context = cxt }
 	LSum cxt t -> return m { term = term m :+: t, output = left  (output m), context = cxt }
 	RSum t cxt -> return m { term = t :+: term m, output = right (output m), context = cxt }
 	LProduct cxt t v -> return m { descending = True, term = t, output = v, context = RProduct (term m) (output m) cxt }
