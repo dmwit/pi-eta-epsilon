@@ -125,10 +125,28 @@ instance Arbitrary Value where
 ------------------------------------------------------------------------------------
 ----                              PrettyPrint                               --------
 ------------------------------------------------------------------------------------
-pprType :: Type -> String
-pprType Zero = "0"
-pprType One  = "1"
-pprType (Sum     x y) = "(" ++ pprType x ++ " + " ++ pprType y ++ ")"
-pprType (Product x y) = "(" ++ pprType x ++ " * " ++ pprType y ++ ")"
-pprType (Negative   x) = "(" ++ " - " ++ pprType x ++ ")"
-pprType (Reciprocal x) = "(" ++ " / " ++ pprType x ++ ")"
+class PPrint a where ppr :: a -> String
+
+parens s = "(" ++ s ++ ")"
+sepBy  s t t' = unwords [ppr t, s, ppr t']
+
+instance PPrint ()      where ppr = const ""
+instance PPrint IsoBase where ppr = show
+instance PPrint Iso     where
+	ppr (Eliminate b) = "e" ++ ppr b
+	ppr (Introduce b) = "i" ++ ppr b
+
+instance PPrint Term where
+	ppr (Base iso) = ppr iso
+	ppr Id = "id"
+	ppr (x ::: y) = parens $ sepBy ";" x y
+	ppr (x :+: y) = parens $ sepBy "+" x y
+	ppr (x :*: y) = parens $ sepBy "x" x y
+
+instance PPrint Type where
+	ppr Zero = "0"
+	ppr One  = "1"
+	ppr (Sum      x y) = parens $ sepBy "+" x  y
+	ppr (Product  x y) = parens $ sepBy "*" x  y
+	ppr (Negative   y) = parens $ sepBy "-" () y
+	ppr (Reciprocal y) = parens $ sepBy "/" () y

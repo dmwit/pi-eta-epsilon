@@ -184,3 +184,26 @@ eval m
 
 topLevel :: Term -> UValue -> [UValue]
 topLevel t v = map output . runPEE . eval $ initialize t v
+
+instance PPrint UValue  where ppr = show
+instance PPrint Context where
+	ppr = go id where
+		go k  Box             = k "[]"
+		go k (Fst      c t  ) = wrapl k c t ";"
+		go k (Snd      t c  ) = wrapr k c t ";"
+		go k (LSum     c t  ) = wrapl k c t "+"
+		go k (RSum     t c  ) = wrapr k c t "+"
+		go k (LProduct c t v) = wrapl k c t "x"
+		go k (RProduct t v c) = wrapr k c t "x"
+		wrapl k c t s = go (\s' -> concat ["(", k s' , " ", s, " ", ppr t, ")"]) c
+		wrapr k c t s = go (\s' -> concat ["(", ppr t, " ", s, " ", k s' , ")"]) c
+
+instance PPrint MachineState where
+	ppr m = concat
+		[ if descending m then "<" else "["
+		, ppr (term    m), ", "
+		, ppr (output  m), ", "
+		, ppr (context m)
+		, if descending m then ">" else "]"
+		, if forward m then "|>" else "<|"
+		]
