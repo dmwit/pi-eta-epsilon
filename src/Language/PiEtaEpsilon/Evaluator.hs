@@ -207,3 +207,9 @@ instance PPrint MachineState where
 		, if descending m then ">" else "]"
 		, if forward m then "|>" else "<|"
 		]
+
+nSteps :: Term -> UValue -> Int -> [(MachineState, IntBindingState ValueF)]
+nSteps t v n = observeAll . runIntBindingT . unPEET $ do
+	m <- (iterate (stepEval >=>) return !! n) (initialize t v)
+	v <- runIdentityT . applyBindings . output $ m
+	return m { output = v }
