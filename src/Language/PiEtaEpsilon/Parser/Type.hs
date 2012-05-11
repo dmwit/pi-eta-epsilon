@@ -1,14 +1,13 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
-module Language.PiEtaEpsilon.Parser where
+module Language.PiEtaEpsilon.Parser.Type where
+import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax 
 import Text.Parsec   
 import Text.Parsec.Expr
-import qualified Text.Parsec.Token as T
-import Text.Parsec.Language
 
-parens     = T.parens haskell
-reservedOp = T.reservedOp haskell
 
+
+---------------------------------------------Type----------------------------------------------
 parseType = runParser pType () ""
 
 pZero = do
@@ -38,5 +37,31 @@ table   = [
       
 binary  name fun assoc = Infix (do{ reservedOp name; return fun }) assoc
 prefix  name fun       = Prefix (do{ reservedOp name; return fun })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

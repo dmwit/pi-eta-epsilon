@@ -13,10 +13,11 @@ import Data.Generics.Uniplate.Data
 import Control.Applicative ((<$>))    
 import Control.Monad.Error
 import Language.PiEtaEpsilon
+import Language.PiEtaEpsilon.Pretty.Debug
 import Debug.Trace
 
 
---main = quickCheck $ roundTrip pprType   (fromRight . parseType)
+--main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
 main = defaultMain tests
 
@@ -58,8 +59,8 @@ tests = [
                     ], 
                     --properities
                     [
-                        testProperty "a ppr type is a parsed type"   $ roundTrip     pprType (fromRight . parseType), 
-                        testProperty "a parsed string is a ppr type" $ roundTripBack pprType (fromRight . parseType)
+                        testProperty "a ppr type is a parsed type"   $ roundTrip     ppr (fromRight . parseType), 
+                        testProperty "a parsed string is a ppr type" $ roundTripBack ppr (fromRight . parseType)
                     ]
                 ],
                     

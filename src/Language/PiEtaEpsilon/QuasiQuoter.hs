@@ -3,7 +3,7 @@ import Language.Haskell.TH.Quote
 import Language.Haskell.TH
 import Data.Typeable
 import Data.Data
-import Language.PiEtaEpsilon.Parser
+import Language.PiEtaEpsilon.Parser.Type
 
 typ :: QuasiQuoter
 typ = QuasiQuoter quoteExprExp quoteExprPat undefined undefined

@@ -120,15 +120,25 @@ instance Arbitrary Value where
                 3 -> tuple  <$>  arb' (size `div` 2) <*> arb' (size `div` 2)
                 4 -> negate <$>  arb' (size - 1)
                 5 -> reciprocate <$> arb' (size - 1)
+                         
+        shrink (Fix Unit)            = []
+        shrink (Fix (Left x))        = [x]
+        shrink (Fix (Right x))       = [x]
+        shrink (Fix (Tuple x y))     = [x, y]
+        shrink (Fix (Negate x))      = [x]
+        shrink (Fix (Reciprocate x)) = [x]
 
--- pretty printer {{{1
-------------------------------------------------------------------------------------
-----                              PrettyPrint                               --------
-------------------------------------------------------------------------------------
-pprType :: Type -> String
-pprType Zero = "0"
-pprType One  = "1"
-pprType (Sum     x y) = "(" ++ pprType x ++ " + " ++ pprType y ++ ")"
-pprType (Product x y) = "(" ++ pprType x ++ " * " ++ pprType y ++ ")"
-pprType (Negative   x) = "(" ++ " - " ++ pprType x ++ ")"
-pprType (Reciprocal x) = "(" ++ " / " ++ pprType x ++ ")"
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+
