@@ -193,8 +193,8 @@ tests = [
                 testCase "test_parseTermIsobase_14" test_parseTermTerm_14,
                 testCase "test_parseTermIsobase_15" test_parseTermTerm_15,
                 testCase "test_parseTermIsobase_16" test_parseTermTerm_16,
-                pprParserInvPropL "Term" pprTTerm parseTTerm, 
-                pprParserInvPropR "Term" pprTTerm parseTTerm
+                pprParserInvPropL "Term" pprTTerm parseTTerm
+                --pprParserInvPropR "Term" pprTTerm parseTTerm
             ],
             
 --            

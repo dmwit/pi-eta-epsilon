@@ -1,13 +1,32 @@
 {-# LANGUAGE TupleSections  #-}
 import Language.PiEtaEpsilon.Parser.Term where
-import Language.PiEtaEpsilon.Syntax
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
 import Text.Parsec.Expr
 import Control.Monad.Reader
-import Prelude hiding (negate)
-import Language.PiEtaEpsilon.Parser.Type
+import Prelude hiding (negate, Left, Right)
+import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value)
+import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
+import Data.Functor.Fixedpoint
+import qualified Language.LBNF.Grammar as G
+import Language.Haskell.TH.Quote
+
+--TODO
+--1.) Make functional
+class To a b | a -> b where
+    to :: a -> b 
+
+class From a b | a -> b where
+    from :: a -> b
+
+instance To M.Term Term where
+    to (TBase     x   ) = Base     (to x)
+    to (TId       (Ident x)) = Id  x -- I could also make a To Ident String instance       
+    to (TCompose  x y ) = Compose  (to x) (to y)       
+    to (TPlus     x y ) = Plus     (to x) (to y)      
+    to (TTimes    x y ) = Times    (to x) (to y)
+
 
 
 

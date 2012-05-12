@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction, MultiParamTypeClasses, TypeSynonymInstances, 
     FunctionalDependencies, FlexibleInstances, TemplateHaskell, QuasiQuotes #-}
-module Language.PiEtaEpsilon.Parser.Value (valueExpr) where
+module Language.PiEtaEpsilon.Parser.Value (To, From) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
@@ -30,8 +30,7 @@ instance To Value M.Value where
     to (VUnit           ) = Fix Unit       
 
 
--- this might hold for now
-valueExpr x = to $([| (quoteExp G.grammar) x |])
+ 
 
 
 ---------------------------------------------Value----------------------------------------------
