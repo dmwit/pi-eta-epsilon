@@ -16,9 +16,9 @@ antiquote "[" ":" ":]" ;
 VTuple.       Value0    ::= "(" Value1 "," Value1 ")" ;
 VLeft.        Value1    ::= "L" Value2               ;
 VRight.       Value2    ::= "R" Value3               ;
-VNegate.      Value3    ::= "_" Value4               ;
-VReciprocate. Value4    ::= "/" Value5               ;
-VUnit.        Value5    ::= "()"                     ;
+VNegate.      Value3    ::= "-" Value4               ;
+VReciprocate. Value4    ::= "/" Value5             ;
+VUnit.        Value5    ::= "u"                      ;
 
 _.  Value      ::= Value0        ;
 _.  Value0     ::= Value1        ;

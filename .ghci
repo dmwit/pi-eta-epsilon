@@ -1,4 +1,5 @@
 :set -i./src -i./tests
 :set -package transformers-0.2.2.0 
 :set -package mtl-2.0.1.0
+:set prompt "|\n>>>"
 :load Main

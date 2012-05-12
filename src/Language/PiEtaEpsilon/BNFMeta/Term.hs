@@ -24,22 +24,44 @@ BSplitP.           BaseIso7    ::= "-*<"                ;
 BDistributiveZero. BaseIso8    ::= "distributiveZero"   ;
 BDistributivePlus. BaseIso9    ::= "distributivePlus"   ;
 --
-IEliminate.        Iso   ::= "X"     BaseIso          ;
-IIntroduce.        Iso   ::= "V"     BaseIso          ;
+IEliminate.        Iso0   ::= "#"     BaseIso            ;
+IIntroduce.        Iso1   ::= "'"     BaseIso            ;
 --
 --Terms
 TCompose.          Term0    ::= Term1 "." Term1        ;
 TPlus.             Term1    ::= Term1 "+" Term2        ;
 TTimes.            Term2    ::= Term2 "*" Term3        ;
-TBase.             Term3    ::= "@" Iso                ;
+TBase.             Term3    ::= "<" Iso                ;
 TId.               Term4    ::= Ident                  ;
 
-_.  Term      ::= Term0        ;
-_.  Term0     ::= Term1        ;
-_.  Term1     ::= Term2        ;
-_.  Term2     ::= Term3        ;
-_.  Term3     ::= Term4        ;
-_.  Term4     ::= "(" Term ")" ;    
+
+_.              Term      ::= Term0        ;
+_.              Term0     ::= Term1        ;
+_.              Term1     ::= Term2        ;
+_.              Term2     ::= Term3        ;
+_.              Term3     ::= Term4        ;
+_.              Term4     ::= "(" Term ")" ;
+
+_.      Iso       ::= Iso0         ;
+_.      Iso0      ::= Iso1         ;
+_.      Iso1      ::= "(" Iso ")"         ;
+
+
+_.  BaseIso   ::= BaseIso0        ;  
+_.  BaseIso0  ::= BaseIso1        ;
+_.  BaseIso1  ::= BaseIso2        ;
+_.  BaseIso2  ::= BaseIso3        ;
+_.  BaseIso3  ::= BaseIso4        ;
+_.  BaseIso4  ::= BaseIso5        ;
+_.  BaseIso5  ::= BaseIso6        ;
+_.  BaseIso6  ::= BaseIso7        ;
+_.  BaseIso7  ::= BaseIso8        ;
+_.  BaseIso8  ::= BaseIso9        ;
+_.  BaseIso9  ::= "(" BaseIso ")" ;
+
+
+
+
 
 
 TDouble.  Typ  ::= "double" ;

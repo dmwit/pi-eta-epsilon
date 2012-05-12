@@ -12,7 +12,7 @@ import Data.List
 import Data.Generics.Uniplate.Data
 import Control.Applicative ((<$>))    
 import Control.Monad.Error
-import Language.PiEtaEpsilon
+import Language.PiEtaEpsilon hiding (term)
 import Language.PiEtaEpsilon.Pretty.Debug
 import Debug.Trace
 import Language.PiEtaEpsilon.BNFMeta.Term
@@ -129,27 +129,28 @@ test_parseTermIsobase_9 = BDistributivePlus  @?= [baseIso| distributivePlus  |]
 
 -- | Iso Tests                
 --------------------------------------------------------------------------------
-test_parseTermIso_10 = IEliminate @?= [iso| X |] 
-test_parseTermIso_11 = IIntroduce @?= [iso| V |] 
+test_parseTermIso_10 = IEliminate BAssociativeS @?= [iso| #  |+|+| |] 
+test_parseTermIso_11 = IIntroduce BAssociativeP @?= [iso| '  |*|*| |] 
 
 -- | Crap I just realized i can use splices to test the ppr is inverse relationship...
 -- | My bad.
 -- | Term Tests                
 --------------------------------------------------------------------------------
-test_parseTermTerm_12 = TCompose @?= [term| (X <=+=>) . (Y |+|+| )|] 
-test_parseTermTerm_13 = TPlus    @?= [term| (X <=+=>) . (Y |+|+| )|] 
-test_parseTermTerm_14 = TTimes   @?= [term| (X <=+=>) . (Y |+|+| )|] 
-test_parseTermTerm_15 = TBase    @?= [term|@ (Y -+<)              |] 
-test_parseTermTerm_16 = TId      @?= [term| i                     |] 
+test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS) @?= [term| (< (# |+|+|)) . (< (' |+|+|)) |] 
+test_parseTermTerm_13 = TTimes  (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)  @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
+test_parseTermTerm_14 = TPlus   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)  @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
+test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                               @?= [term| < # |*|*|                     |] 
+test_parseTermTerm_16 = TId      (Ident "i")                                                               @?= [term| i                             |] 
 
 -- | Value Tests
 --------------------------------------------------------------------------------
-test_parseValue_0 = VTuple       @?= [value| ((), ()) |] 
-test_parseValue_1 = VLeft        @?= [value| L  |] 
-test_parseValue_2 = VRight       @?= [value| R  |] 
-test_parseValue_3 = VNegate      @?= [value| -  |] 
-test_parseValue_4 = VReciprocate @?= [value| /  |] 
-test_parseValue_5 = VUnit        @?= [value| () |] 
+------------------------------------------I am really testing the Unit here. Watch this guys. Watch this. This is what Unit testing is all about!
+test_parseValue_0 = VTuple  VUnit VUnit @?= [value| ( u, u ) |] 
+test_parseValue_1 = VLeft   VUnit       @?= [value| L u      |] 
+test_parseValue_2 = VRight  VUnit       @?= [value| R u      |] 
+test_parseValue_3 = VNegate VUnit       @?= [value| - u     |] 
+test_parseValue_4 = VReciprocate VUnit  @?= [value| / u    |] 
+test_parseValue_5 = VUnit               @?= [value| u        |] 
 
 
 
