@@ -9,7 +9,7 @@ import Debug.Trace.Helpers
 import Debug.Trace
 import Test.QuickCheck.Checkers
 import Data.List
-import Data.Generics.Uniplate.Data
+--import Data.Generics.Uniplate.Data
 import Control.Applicative ((<$>))    
 import Control.Monad.Error
 import Language.PiEtaEpsilon hiding (term, Term, Iso, Value)
@@ -253,16 +253,13 @@ test_parseValue_5 = VUnit               @?= [value| u        |]
 
 
 
+-- evalIso 
+------------------------------------------------------------------------------
+extract = const True
+test_evalEliminateIdentityS = actual @?= expected where
+    actual   = extract $ evalIso $ to [iso| # <=+=> |] 
+    --expected = extract $ [iso|  |]
+    expected = undefined
 
-
-
-
-
-
-
-
-
---TODO write all the unit tests and the quickcheck properities
---that stuff works
     
       
