@@ -28,3 +28,24 @@ library
                        transformers >= 0.2 && < 0.4,
                        unification-fd >= 0.7 && < 0.8,
                        BNFC-meta >= 0.3.0.1
+
+Test-Suite tests
+   Hs-Source-Dirs: src, tests
+   type:       exitcode-stdio-1.0
+   main-is:    Main.hs
+   build-depends: base > 4.0.0 && <= 5.0,
+            checkers>= 0.2.9,
+            DebugTraceHelpers >= 0.12,
+            HUnit >= 1.2.4.2,
+            test-framework-quickcheck2 >= 0.2.12.1,
+            test-framework-hunit >= 0.2.7,
+            test-framework >= 0.6,
+            ghc-prim >= 0.2 && < 0.3,
+               logict >= 0.5 && < 0.6,
+               mtl >= 2.0 && < 2.3,
+               parsec >= 3.0 && < 3.2,
+               QuickCheck >= 2.4 && < 2.5,
+               template-haskell >= 2.6 && < 2.8,
+               transformers >= 0.2 && < 0.4,
+               unification-fd >= 0.7 && < 0.8,
+               BNFC-meta >= 0.3.0.1

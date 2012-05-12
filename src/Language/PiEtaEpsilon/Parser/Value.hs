@@ -12,16 +12,9 @@ import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
 import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
+import Language.PiEtaEpsilon.Parser.Classes
 
---TODO
---1.) Make functional
-class To a b | a -> b where
-    to :: b -> a 
-    
-class From a b | a -> b where
-    from :: b -> a
-
-instance To Value M.Value where
+instance To M.Value Value where
     to (VTuple       x y) = Fix $ Tuple (to x) (to y)
     to (VLeft        x  ) = Fix $ Left        (to x)       
     to (VRight       x  ) = Fix $ Right       (to x)       

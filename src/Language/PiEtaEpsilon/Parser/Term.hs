@@ -1,5 +1,6 @@
-{-# LANGUAGE TupleSections  #-}
-import Language.PiEtaEpsilon.Parser.Term where
+{-# LANGUAGE TupleSections, MultiParamTypeClasses  #-}
+module Language.PiEtaEpsilon.Parser.Term where
+import Language.PiEtaEpsilon.Parser.Classes
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
@@ -7,26 +8,35 @@ import Text.Parsec.Expr
 import Control.Monad.Reader
 import Prelude hiding (negate, Left, Right)
 import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value)
-import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
+import qualified Language.PiEtaEpsilon.BNFMeta.Term as M
 import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 
---TODO
---1.) Make functional
-class To a b | a -> b where
-    to :: a -> b 
-
-class From a b | a -> b where
-    from :: a -> b
 
 instance To M.Term Term where
-    to (TBase     x   ) = Base     (to x)
-    to (TId       (Ident x)) = Id  x -- I could also make a To Ident String instance       
-    to (TCompose  x y ) = Compose  (to x) (to y)       
-    to (TPlus     x y ) = Plus     (to x) (to y)      
-    to (TTimes    x y ) = Times    (to x) (to y)
+    to (M.TBase     x   ) = Base     (to x)
+    to (M.TId       (M.Ident x)) = Id -- I could also make a To Ident String instance       
+    to (M.TCompose  x y ) = (to x) ::: (to y)       
+    to (M.TPlus     x y ) = (to x) :+: (to y)      
+    to (M.TTimes    x y ) = (to x) :*: (to y)
 
+
+instance To M.Iso Iso where
+    to (M.IEliminate x) = Eliminate (to x)
+    to (M.IIntroduce x) = Introduce (to x)
+    
+instance To M.BaseIso IsoBase where
+    to M.BIdentityS        = IdentityS          
+    to M.BIdentityP        = IdentityP       
+    to M.BCommutativeS     = CommutativeS    
+    to M.BCommutativeP     = CommutativeP    
+    to M.BAssociativeS     = AssociativeS    
+    to M.BAssociativeP     = AssociativeP    
+    to M.BSplitS           = SplitS          
+    to M.BSplitP           = SplitP          
+    to M.BDistributiveZero = DistributiveZero
+    to M.BDistributivePlus = DistributivePlus
 
 
 
