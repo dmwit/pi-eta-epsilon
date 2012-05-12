@@ -1,5 +1,5 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
-module Language.PiEtaEpsilon.Parser.Value where
+module Language.PiEtaEpsilon.Parser.Value (valueExpr) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
@@ -9,6 +9,8 @@ import Prelude hiding (negate)
 
 
 ---------------------------------------------Value----------------------------------------------
+
+valueExpr = expr
 
 expr = parens expr'
     <|> expr'

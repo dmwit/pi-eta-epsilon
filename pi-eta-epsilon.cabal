@@ -13,7 +13,8 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Language.PiEtaEpsilon,
                        Language.PiEtaEpsilon.Evaluator,
-                       Language.PiEtaEpsilon.Parser,
+                       Language.PiEtaEpsilon.Parser.Type,
+                       Language.PiEtaEpsilon.Parser.Value,
                        Language.PiEtaEpsilon.QuasiQuoter,
                        Language.PiEtaEpsilon.Syntax
   hs-source-dirs:      src
@@ -25,4 +26,5 @@ library
                        QuickCheck >= 2.4 && < 2.5,
                        template-haskell >= 2.6 && < 2.8,
                        transformers >= 0.2 && < 0.4,
-                       unification-fd >= 0.7 && < 0.8
+                       unification-fd >= 0.7 && < 0.8,
+                       BNFC-meta >= 0.3.0.1

@@ -1,5 +1,7 @@
 -- boilerplate {{{1
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, GeneralizedNewtypeDeriving, MultiParamTypeClasses, StandaloneDeriving #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, NoMonomorphismRestriction,
+    GeneralizedNewtypeDeriving, MultiParamTypeClasses, OverlappingInstances,
+    StandaloneDeriving #-}
 module Language.PiEtaEpsilon.Evaluator where
 
 import Language.PiEtaEpsilon.Syntax
@@ -9,6 +11,7 @@ import Control.Monad.Error
 import Control.Monad.Logic
 import Control.Monad.Identity
 import Control.Monad.Trans.Identity
+import Control.Monad.Trans
 import Control.Unification
 import Control.Unification.IntVar
 import Prelude hiding (Either(..), negate)
