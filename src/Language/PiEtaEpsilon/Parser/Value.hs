@@ -1,5 +1,5 @@
 {-# LANGUAGE NoMonomorphismRestriction, MultiParamTypeClasses, TypeSynonymInstances, 
-    FunctionalDependencies, FlexibleInstances #-}
+    FunctionalDependencies, FlexibleInstances, TemplateHaskell, QuasiQuotes #-}
 module Language.PiEtaEpsilon.Parser.Value (valueExpr) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
@@ -10,6 +10,8 @@ import Prelude hiding (negate, Left, Right)
 import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value)
 import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
 import Data.Functor.Fixedpoint
+import qualified Language.LBNF.Grammar as G
+import Language.Haskell.TH.Quote
 
 --TODO
 --1.) Make functional
@@ -28,10 +30,8 @@ instance To Value M.Value where
     to (VUnit           ) = Fix Unit       
 
 
---I need the string parser that the quasiquoter is built on. 
--- I emailed the owner of bnfc-meta about getting access.
--- I think it is qGrammar in BNFCMETA....Grammar.hs
-valueExpr = undefined
+-- this might hold for now
+valueExpr x = to $([| (quoteExp G.grammar) x |])
 
 
 ---------------------------------------------Value----------------------------------------------

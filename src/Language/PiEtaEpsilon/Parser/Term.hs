@@ -9,8 +9,9 @@ import Control.Monad.Reader
 import Prelude hiding (negate)
 import Language.PiEtaEpsilon.Parser.Type
 
-toTerm :: Type -> Value -> Term
-toTerm = undefined
+
+
+
 
 {-
 -- isomorphisms {{{2
@@ -21,6 +22,7 @@ data IsoBase
 	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
 -}
 
+{-
 pIsoBase =  pIdentityS
         <|> pIdentityP
         <|> pCommutativeS
@@ -102,4 +104,4 @@ pId      = undefined
 pElement = undefined
 pPlus    = undefined
 pTimes   = undefined
-
+-}
