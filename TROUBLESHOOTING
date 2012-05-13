@@ -1,0 +1,7 @@
+I added the following restrictions to the BNFC-meta.cabal file so it would compile.
+
+, array <= 0.3.3.0
+, haskell-src-meta < 0.5.1.2
+, happy-meta < 0.2.0.4
+, alex-meta < 0.3.0.3
+

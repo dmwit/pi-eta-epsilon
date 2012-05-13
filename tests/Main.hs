@@ -13,6 +13,7 @@ import Data.List
 import Control.Applicative ((<$>))    
 import Control.Monad.Error
 import Language.PiEtaEpsilon hiding (term, Term, Iso, Value)
+import qualified Language.PiEtaEpsilon as P
 import Language.PiEtaEpsilon.Pretty.Debug
 import Debug.Trace
 import Language.PiEtaEpsilon.BNFMeta.Term
@@ -247,8 +248,8 @@ test_parseTermTerm_16 = TId      (Ident "i")                                    
 test_parseValue_0 = VTuple  VUnit VUnit @?= [value| ( u, u ) |] 
 test_parseValue_1 = VLeft   VUnit       @?= [value| L u      |] 
 test_parseValue_2 = VRight  VUnit       @?= [value| R u      |] 
-test_parseValue_3 = VNegate VUnit       @?= [value| - u     |] 
-test_parseValue_4 = VReciprocate VUnit  @?= [value| / u    |] 
+test_parseValue_3 = VNegate VUnit       @?= [value| - u      |] 
+test_parseValue_4 = VReciprocate VUnit  @?= [value| / u      |] 
 test_parseValue_5 = VUnit               @?= [value| u        |] 
 
 
@@ -261,5 +262,15 @@ test_evalEliminateIdentityS = actual @?= expected where
     --expected = extract $ [iso|  |]
     expected = undefined
 
-    
-      
+
+termEval :: P.Term -> [UValue]
+termEval x = topLevel x unit
+
+isoEval :: P.Iso -> [UValue]
+isoEval = termEval . P.Base
+
+---test_evalEliminateIdentityS = actual @?= expected where
+--    actual   = isoEval $ to [iso| # <=+=> |] 
+--    --expected = extract $ [iso|  |]
+--    expected = undefined
+
