@@ -2,6 +2,7 @@ module Language.PiEtaEpsilon.Examples where
 
 import Prelude hiding ((||))
 import Language.PiEtaEpsilon
+import Language.PiEtaEpsilon.Pretty.Debug
 import Language.PiEtaEpsilon.Parser
 import Language.PiEtaEpsilon.Syntax
 import Language.PiEtaEpsilon.Evaluator
