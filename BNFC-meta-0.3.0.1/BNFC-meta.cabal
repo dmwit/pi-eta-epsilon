@@ -1,0 +1,51 @@
+Name:		BNFC-meta
+version:	0.3.0.1
+cabal-Version:  >= 1.6
+build-type:     Simple
+license:        GPL-2
+license-file:   LICENSE
+author:		Jonas Duregård
+maintainer:     Jonas Duregård (jonas.duregard@chalmers.se)
+category:	Development
+synopsis:	Deriving Quasi-Quoters from BNF Grammars
+description:    This package provides a comfortable way of defining quasi-quoters. 
+  Specifically, given a quasi-quoted LBNF grammar (as used by the BNF Converter)  
+  it generates (using Template Haskell) an LALR parser and pretty pretty printer 
+  for the language. The parser is then used to define a quasi-quoter. With a simple
+  pragma, the user can define a universal syntax for anti-quoting. This means that 
+  any grammar non-terminal can be replaced by a quoted Haskell expression of the 
+  appropriate type. A few examples are included in the source tarball.
+
+extra-source-files:
+  examples/GHC7/jll/JavaletteLight.hs
+  examples/GHC7/jll/UseJll.hs
+  examples/GHC6/jll/JavaletteLight.hs
+  examples/GHC6/jll/UseJll.hs
+  Bootstrap/Bootstrap.hs
+
+Library
+  Build-Depends: 
+    base>=4.2&&<5
+    , array==0.3.0.*
+    , template-haskell >=2.4&&<2.7
+    , haskell-src-meta >= 0.5 && < 1.0
+    , happy-meta >= 0.2.0.4 && < 0.3
+    , alex-meta >= 0.3.0.3 && < 0.4
+    , syb >= 0.2 && <1.0
+  Exposed-modules:
+    Language.LBNF
+    , Language.LBNF.Runtime
+    , Language.LBNF.Compiletime
+    , Language.LBNF.Grammar
+  Other-modules:
+    Language.LBNF.CF
+    , Language.LBNF.CFtoAbstract
+    , Language.LBNF.CFtoAlex2
+    , Language.LBNF.CFtoHappy 
+    , Language.LBNF.CFtoLayout 
+    , Language.LBNF.CFtoPrinter
+    , Language.LBNF.CFtoQQ
+    , Language.LBNF.GetCF
+    , Language.LBNF.TypeChecker
+    , Language.LBNF.Utils
+    , Language.Haskell.TH.Hide
