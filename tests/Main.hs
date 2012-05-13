@@ -256,6 +256,12 @@ test_parseValue_5 = VUnit               @?= [value| u        |]
 
 -- evalIso 
 ------------------------------------------------------------------------------
+extract = const True
+test_evalEliminateIdentityS = actual @?= expected where
+    actual   = extract $ evalIso $ to [iso| # <=+=> |] 
+    --expected = extract $ [iso|  |]
+    expected = undefined
+
 
 termEval :: P.Term -> [UValue]
 termEval x = topLevel x unit
@@ -268,5 +274,3 @@ isoEval = termEval . P.Base
 --    --expected = extract $ [iso|  |]
 --    expected = undefined
 
-    
-      

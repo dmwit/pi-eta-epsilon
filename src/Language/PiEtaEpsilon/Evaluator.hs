@@ -76,8 +76,6 @@ newVariable = var <$> freeVar
 -- values in the holes.  For example, "transform1 left right v" turns (Left v)
 -- into (Right v) and fails on any value that definitely doesn't have "Left" at
 -- the front.
-transform0 :: (MonadError (UnificationFailure t v) m, BindingMonad t v m) 
-           => UTerm t v -> b -> UTerm t v -> m b
 transform0 f f' v = runIdentityT (v =:= f) >> return f'
 transform1 f f' v = newVariable >>= \v' -> transform0 (f v') (f' v') v
 transform2 f f' v = newVariable >>= \v' -> transform1 (f v') (f' v') v

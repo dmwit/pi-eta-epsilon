@@ -1,5 +1,34 @@
-:set -i./src -i./tests
-:set -package transformers-0.2.2.0 
-:set -package mtl-2.0.1.0
--- :set prompt "|\n>>>"
-:load Main
+-- 
+-- This is taken from doctests's doctests:
+--
+:set -DTEST -isrc -itests -idist/build/autogen -packageghc
+
+--
+-- You may want to enable this (for doctest convenience):
+--
+-- :set prompt "\n|\n>>>"
+-- 
+-- The reason this might be useful, is that you could copy/paste your ghci
+--    session into a file you're editing, and (except for commenting)
+--    it will already be in a format which doctest will check for you.
+--
+-- In order to comment it out, use the regular expression:
+--    
+--    s/^/-- /
+--  
+-- on the newly added lines.
+--
+-- In practical terms, this means you can run some expressions in ghci,
+--    paste your session into a doctested source (.hs) file, and you will
+--    be alerted in the future should the evaluation of that expression
+--    ever change.
+
+
+-- These the ones suggested by jfischoff, commented:
+-- :set -i./src -i./tests
+-- :load Main
+
+-- I expect these shouldn't ever be necessary?
+-- :set -package transformers-0.2.2.0 
+-- :set -package mtl-2.0.1.0
+
