@@ -21,8 +21,9 @@ import Language.PiEtaEpsilon.BNFMeta.Value
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 import Control.Applicative
-
-
+import Control.Unification
+import Control.Unification.IntVar
+import Control.Monad.Logic
 
 --main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
@@ -256,21 +257,15 @@ test_parseValue_5 = VUnit               @?= [value| u        |]
 
 -- evalIso 
 ------------------------------------------------------------------------------
-extract = const True
-test_evalEliminateIdentityS = actual @?= expected where
-    actual   = extract $ evalIso $ to [iso| # <=+=> |] 
-    --expected = extract $ [iso|  |]
-    expected = undefined
-
-
 termEval :: P.Term -> [UValue]
 termEval x = topLevel x unit
 
 isoEval :: P.Iso -> [UValue]
 isoEval = termEval . P.Base
 
----test_evalEliminateIdentityS = actual @?= expected where
---    actual   = isoEval $ to [iso| # <=+=> |] 
---    --expected = extract $ [iso|  |]
---    expected = undefined
+--test_evalEliminateIdentityS = do
+--    let actual   = isoEval $ to [iso| # <=+=> |] 
+--        expected = undefined
+--    
+--    assertBool "test_evalEliminateIdentityS" $ observeAll $ runIntBindingT (all $ zipWith (===) actual expected)
 
