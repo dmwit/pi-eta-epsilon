@@ -28,7 +28,7 @@ IEliminate.        Iso0   ::= "#"     BaseIso            ;
 IIntroduce.        Iso1   ::= "'"     BaseIso            ;
 --
 --Terms
-TCompose.          Term0    ::= Term1 "." Term1        ;
+TDistribute.       Term0    ::= Term1 ";" Term1        ;
 TPlus.             Term1    ::= Term1 "+" Term2        ;
 TTimes.            Term2    ::= Term2 "*" Term3        ;
 TBase.             Term3    ::= "<" Iso                ;
