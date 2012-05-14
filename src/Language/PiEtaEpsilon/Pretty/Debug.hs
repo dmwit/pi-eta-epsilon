@@ -1,8 +1,14 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances, UndecidableInstances #-}
 module Language.PiEtaEpsilon.Pretty.Debug where
-import Language.PiEtaEpsilon
+
+import Language.PiEtaEpsilon.Syntax
+import Language.PiEtaEpsilon.Evaluator
+import Control.Unification.Types   -- necessary to compile here!
+import Control.Unification.IntVar  -- necessary to compile here!
+
 import Data.Functor.Fixedpoint
 import Prelude hiding (Left, Right)
+
 
 {-
 class Pretty a where

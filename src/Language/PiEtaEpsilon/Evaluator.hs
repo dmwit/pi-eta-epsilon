@@ -5,7 +5,7 @@
 module Language.PiEtaEpsilon.Evaluator where
 
 import Language.PiEtaEpsilon.Syntax
-import Language.PiEtaEpsilon.Pretty.Debug
+--import Language.PiEtaEpsilon.Pretty.Debug
 import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Logic
