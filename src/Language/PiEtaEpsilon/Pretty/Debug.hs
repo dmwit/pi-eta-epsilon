@@ -99,7 +99,7 @@ instance (Show (t (UTerm t IntVar))) => PPrint (IntBindingState t) where
 -- This is an updated version I am playing with.
 --
 -- dday
-{-
+
 instance PPrint MachineState where
 	ppr m = concat
 		[ if descending m then "|v|" else "|^|", " "
@@ -108,8 +108,8 @@ instance PPrint MachineState where
 		, "outp => ", ppr (output  m), ", "
 		, "ctxt => ", ppr (context m)
 		]
--}
 
+{-
 instance PPrint MachineState where
 	ppr m = concat
 		[ if descending m then "<" else "["
@@ -119,4 +119,4 @@ instance PPrint MachineState where
 		, if descending m then ">" else "]"
 		, if forward m then "|>" else "<|"
 		]
-
+-}
