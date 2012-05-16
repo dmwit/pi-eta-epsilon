@@ -55,7 +55,7 @@ test-suite tests
                     template-haskell >= 2.6 && < 2.8,
                     transformers >= 0.2 && < 0.4,
                     unification-fd >= 0.7 && < 0.8,
-                    BNFC-meta >= 0.3 && < 0.3
+                    BNFC-meta >= 0.3 && < 0.4
 
 test-suite doctests
    type:            exitcode-stdio-1.0
