@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction, MultiParamTypeClasses, TypeSynonymInstances, 
     FunctionalDependencies, FlexibleInstances, TemplateHaskell, QuasiQuotes #-}
-module Language.PiEtaEpsilon.Parser.Value (To, From) where
+module Language.PiEtaEpsilon.Parser.Value (toP) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
@@ -22,9 +22,13 @@ instance To M.Value Value where
     to (VReciprocate x  ) = Fix $ Reciprocate (to x)
     to (VUnit           ) = Fix Unit       
 
-
- 
-
+toP :: (Particle a) => Value -> a
+toP (Fix ( Tuple x y)) = tuple  (toP x) (toP y)
+toP (Fix ( Left         x)) = left   (toP x)
+toP (Fix ( Right        x)) = right  (toP x)
+toP (Fix ( Negate       x)) = negate (toP x)
+toP (Fix ( Reciprocate  x)) = reciprocate (toP x)
+toP (Fix Unit)                  = unit
 
 ---------------------------------------------Value----------------------------------------------
 {-

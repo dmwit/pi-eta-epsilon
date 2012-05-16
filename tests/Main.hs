@@ -264,16 +264,21 @@ test_parseValue_5 = VUnit               @?= [value| u        |]
 
 -- evalIso 
 ------------------------------------------------------------------------------
-termEval :: P.Term -> [UValue]
-termEval x = topLevel x unit
+termEval :: UValue -> P.Term -> [UValue]
+termEval i x = topLevel x i
 
-isoEval :: P.Iso -> [UValue]
-isoEval = termEval . P.Base
+isoEval :: UValue -> P.Iso -> [UValue]
+isoEval i x = termEval i $ P.Base x
 
-test_evalEliminateIdentityS = do
-    let actual   = isoEval $ to [iso| # <=+=> |]
-        expected = [UTerm Unit]
+toUV = toP . to
+
+test_evalEliminateIdentityS = 
+    assertBool "test_evalEliminateIdentityS" $ actual `closedAndEqual` expected where
+        actual   = head $ isoEval unit $ to [iso| ' <=+=> |]
+        expected = toUV [value| R u |]
+        
+--Should make sure that all adjoints composed with each are inverse
+--
     
-    assertBool "test_evalEliminateIdentityS" $ all fst $ traceIt $ observeAll $ 
-        runIntBindingT ((all id) <$> (mapM (\(x, y) -> x === y) $ zip actual expected))
+    
 
