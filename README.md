@@ -1,6 +1,6 @@
 
-# Test Status:
-## $ cabal test
+## Test Status:
+     $ cabal test
      Running 2 test suites...
      Test suite doctests: RUNNING...
      Test suite doctests: PASS
