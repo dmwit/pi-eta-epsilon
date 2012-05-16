@@ -14,6 +14,7 @@ import Control.Monad.Trans.Identity
 import Control.Monad.Trans
 import Control.Unification
 import Control.Unification.IntVar
+import Data.Function
 import Prelude hiding (Either(..), negate)
 import GHC.Generics hiding ((:*:))
 
@@ -64,6 +65,18 @@ instance Unifiable ValueF where
 	zipMatch (Negate      a   ) (Negate      b   ) = Just (Negate      (a, b)         )
 	zipMatch (Reciprocate a   ) (Reciprocate b   ) = Just (Reciprocate (a, b)         )
 	zipMatch _ _ = Nothing
+
+closeValue :: UValue -> Maybe Value
+closeValue (UTerm  Unit          ) = return unit
+closeValue (UTerm (Left   v     )) = left   <$> closeValue v
+closeValue (UTerm (Right  v     )) = right  <$> closeValue v
+closeValue (UTerm (Tuple  v1 v2 )) = tuple  <$> closeValue v1 <*> closeValue v2
+closeValue (UTerm (Negate v     )) = negate <$> closeValue v
+closeValue (UTerm (Reciprocate v)) = reciprocate <$> closeValue v
+closeValue _ = empty
+
+closedAndEqual :: UValue -> UValue -> Bool
+closedAndEqual = (==) `on` closeValue
 
 -- evaluation {{{1
 -- misc {{{2
