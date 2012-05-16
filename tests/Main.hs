@@ -18,6 +18,7 @@ import Language.PiEtaEpsilon.Pretty.Debug
 import Debug.Trace
 import Language.PiEtaEpsilon.BNFMeta.Term
 import Language.PiEtaEpsilon.BNFMeta.Value
+import Language.PiEtaEpsilon.BNFMeta.Pi
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 import Control.Applicative
@@ -25,6 +26,8 @@ import Control.Unification
 import Control.Unification.IntVar
 import Control.Monad.Logic
 import Debug.Trace.Helpers
+import Data.Maybe
+import Prelude hiding (pi)
 
 --main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
@@ -90,7 +93,7 @@ instance Arbitrary Term where
                 1 -> TPlus         <$> arb (depth `div` 2) <*> arb (depth `div` 2)
                 2 -> TTimes        <$> arb (depth `div` 2) <*> arb (depth `div` 2)
                 3 -> TBase         <$> arbitrary
-                4 -> (TId . Ident) <$> arbitrary
+                4 -> return TId       
 
 
 ---------------------------
@@ -245,7 +248,7 @@ test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ I
 test_parseTermTerm_13 = TTimes   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
 test_parseTermTerm_14 = TPlus    (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
 test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                                  @?= [term| < # |*|*|                     |] 
-test_parseTermTerm_16 = TId      (Ident "i")                                                                  @?= [term| i                             |] 
+test_parseTermTerm_16 = TId                                                                        @?= [term| <=>                             |] 
 
 -- | Value Tests
 --------------------------------------------------------------------------------
@@ -269,7 +272,7 @@ isoEval = termEval . P.Base
 
 test_evalEliminateIdentityS = do
     let actual   = isoEval $ to [iso| # <=+=> |]
-        expected = [UTerm (P.Left (UTerm Unit))]
+        expected = [UTerm Unit]
     
     assertBool "test_evalEliminateIdentityS" $ all fst $ traceIt $ observeAll $ 
         runIntBindingT ((all id) <$> (mapM (\(x, y) -> x === y) $ zip actual expected))

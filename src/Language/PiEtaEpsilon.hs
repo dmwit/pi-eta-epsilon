@@ -15,3 +15,7 @@ import Language.PiEtaEpsilon.Parser.Value
 import Language.PiEtaEpsilon.QuasiQuoter
 import Language.PiEtaEpsilon.Parser.Term
 import Language.PiEtaEpsilon.Parser.Classes
+
+import Control.Monad.Error.Class   -- to make type signatures easier to read
+import Control.Unification.Types   -- to make type signatures easier to read
+import Control.Unification.IntVar  -- to make type signatures easier to read

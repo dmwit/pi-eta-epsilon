@@ -5,7 +5,7 @@
 module Language.PiEtaEpsilon.Evaluator where
 
 import Language.PiEtaEpsilon.Syntax
-import Language.PiEtaEpsilon.Pretty.Debug
+--import Language.PiEtaEpsilon.Pretty.Debug
 import Control.Applicative
 import Control.Monad.Error
 import Control.Monad.Logic
@@ -67,7 +67,7 @@ instance Unifiable ValueF where
 
 -- evaluation {{{1
 -- misc {{{2
-newVariable :: BindingMonad t v m => m (UTerm t' v)
+newVariable :: BindingMonad t v m => m (UTerm t0 v)
 newVariable = var <$> freeVar
 
 -- The type signatures are scarier than the implementations.  The basic idea is
@@ -80,6 +80,10 @@ transform0 f f' v = runIdentityT (v =:= f) >> return f'
 transform1 f f' v = newVariable >>= \v' -> transform0 (f v') (f' v') v
 transform2 f f' v = newVariable >>= \v' -> transform1 (f v') (f' v') v
 transform3 f f' v = newVariable >>= \v' -> transform2 (f v') (f' v') v
+transform4 f f' v = newVariable >>= \v' -> transform3 (f v') (f' v') v
+transform5 f f' v = newVariable >>= \v' -> transform4 (f v') (f' v') v
+transform6 f f' v = newVariable >>= \v' -> transform5 (f v') (f' v') v
+transform7 f f' v = newVariable >>= \v' -> transform6 (f v') (f' v') v
 
 tripleL, tripleR :: Particle a => a -> a -> a -> a
 tripleL v1 v2 v3 = tuple (tuple v1 v2) v3
@@ -194,26 +198,3 @@ nSteps t v n = observeAll . runIntBindingT . unPEET $ do
 	v <- runIdentityT . applyBindings . output $ m
 	return m { output = v }
 
--- pretty printer {{{1
-instance PPrint UValue  where ppr = show
-instance PPrint Context where
-	ppr = go id where
-		go k  Box             = k "[]"
-		go k (Fst      c t  ) = wrapl k c t ";"
-		go k (Snd      t c  ) = wrapr k c t ";"
-		go k (LSum     c t  ) = wrapl k c t "+"
-		go k (RSum     t c  ) = wrapr k c t "+"
-		go k (LProduct c t v) = wrapl k c t "x"
-		go k (RProduct t v c) = wrapr k c t "x"
-		wrapl k c t s = go (\s' -> concat ["(", k s' , " ", s, " ", ppr t, ")"]) c
-		wrapr k c t s = go (\s' -> concat ["(", ppr t, " ", s, " ", k s' , ")"]) c
-
-instance PPrint MachineState where
-	ppr m = concat
-		[ if descending m then "<" else "["
-		, ppr (term    m), ", "
-		, ppr (output  m), ", "
-		, ppr (context m)
-		, if descending m then ">" else "]"
-		, if forward m then "|>" else "<|"
-		]
