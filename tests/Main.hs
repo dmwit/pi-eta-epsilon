@@ -86,7 +86,7 @@ instance Arbitrary Term where
         arb depth = do
             i <- choose'(if depth < 1 then 0 else 4, 4)
             case i of
-                0 -> TDistribute   <$> arb (depth `div` 2) <*> arb (depth `div` 2)
+                0 -> TCompose      <$> arb (depth `div` 2) <*> arb (depth `div` 2)
                 1 -> TPlus         <$> arb (depth `div` 2) <*> arb (depth `div` 2)
                 2 -> TTimes        <$> arb (depth `div` 2) <*> arb (depth `div` 2)
                 3 -> TBase         <$> arbitrary
@@ -241,9 +241,9 @@ test_parseTermIso_11 = IIntroduce BAssociativeP @?= [iso| '  |*|*| |]
 -- | My bad.
 -- | Term Tests                
 --------------------------------------------------------------------------------
-test_parseTermTerm_12 = TDistribute (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS) @?= [term| (< (# |+|+|)) ; (< (' |+|+|)) |] 
-test_parseTermTerm_13 = TTimes  (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
-test_parseTermTerm_14 = TPlus   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
+test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS)    @?= [term| (< (# |+|+|)) ; (< (' |+|+|)) |] 
+test_parseTermTerm_13 = TTimes   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
+test_parseTermTerm_14 = TPlus    (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
 test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                                  @?= [term| < # |*|*|                     |] 
 test_parseTermTerm_16 = TId      (Ident "i")                                                                  @?= [term| i                             |] 
 
