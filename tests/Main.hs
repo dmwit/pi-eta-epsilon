@@ -24,6 +24,7 @@ import Control.Applicative
 import Control.Unification
 import Control.Unification.IntVar
 import Control.Monad.Logic
+import Debug.Trace.Helpers
 
 --main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
@@ -85,11 +86,11 @@ instance Arbitrary Term where
         arb depth = do
             i <- choose'(if depth < 1 then 0 else 4, 4)
             case i of
-                0 -> TCompose <$> arb (depth `div` 2) <*> arb (depth `div` 2)
-                1 -> TPlus    <$> arb (depth `div` 2) <*> arb (depth `div` 2)
-                2 -> TTimes   <$> arb (depth `div` 2) <*> arb (depth `div` 2)
-                3 -> TBase    <$> arbitrary
-                4 -> (TId . Ident)      <$> arbitrary
+                0 -> TCompose      <$> arb (depth `div` 2) <*> arb (depth `div` 2)
+                1 -> TPlus         <$> arb (depth `div` 2) <*> arb (depth `div` 2)
+                2 -> TTimes        <$> arb (depth `div` 2) <*> arb (depth `div` 2)
+                3 -> TBase         <$> arbitrary
+                4 -> (TId . Ident) <$> arbitrary
 
 
 ---------------------------
@@ -211,6 +212,9 @@ tests = [
                 testCase "test_parseValue_5" test_parseValue_5
                 --pprParserInvPropL "Value" pprVValue parseVValue, 
                 --pprParserInvPropR "Value" pprVValue parseVValue
+            ],
+            testGroup "machine tests " [
+                testCase "test_evalEliminateIdentityS" test_evalEliminateIdentityS
             ]
             
         ]
@@ -237,11 +241,11 @@ test_parseTermIso_11 = IIntroduce BAssociativeP @?= [iso| '  |*|*| |]
 -- | My bad.
 -- | Term Tests                
 --------------------------------------------------------------------------------
-test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS) @?= [term| (< (# |+|+|)) . (< (' |+|+|)) |] 
-test_parseTermTerm_13 = TTimes  (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)  @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
-test_parseTermTerm_14 = TPlus   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)  @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
-test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                               @?= [term| < # |*|*|                     |] 
-test_parseTermTerm_16 = TId      (Ident "i")                                                               @?= [term| i                             |] 
+test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS)    @?= [term| (< (# |+|+|)) ; (< (' |+|+|)) |] 
+test_parseTermTerm_13 = TTimes   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
+test_parseTermTerm_14 = TPlus    (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
+test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                                  @?= [term| < # |*|*|                     |] 
+test_parseTermTerm_16 = TId      (Ident "i")                                                                  @?= [term| i                             |] 
 
 -- | Value Tests
 --------------------------------------------------------------------------------
@@ -263,9 +267,10 @@ termEval x = topLevel x unit
 isoEval :: P.Iso -> [UValue]
 isoEval = termEval . P.Base
 
---test_evalEliminateIdentityS = do
---    let actual   = isoEval $ to [iso| # <=+=> |] 
---        expected = undefined
---    
---    assertBool "test_evalEliminateIdentityS" $ observeAll $ runIntBindingT (all $ zipWith (===) actual expected)
+test_evalEliminateIdentityS = do
+    let actual   = isoEval $ to [iso| # <=+=> |]
+        expected = [UTerm (P.Left (UTerm Unit))]
+    
+    assertBool "test_evalEliminateIdentityS" $ all fst $ traceIt $ observeAll $ 
+        runIntBindingT ((all id) <$> (mapM (\(x, y) -> x === y) $ zip actual expected))
 
