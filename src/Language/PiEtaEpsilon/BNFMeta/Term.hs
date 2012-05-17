@@ -15,14 +15,14 @@ antiquote "[" ":" ":]" ;
 --Iso                                               
 BIdentityS.        BaseIso0    ::= "<=+=>"              ;
 BIdentityP.        BaseIso1    ::= "<=*=>"              ;
-BCommutativeS.     BaseIso2    ::= "commutativeS"       ;
-BCommutativeP.     BaseIso3    ::= "commutativeP"       ;
+BCommutativeS.     BaseIso2    ::= "x+x"       ;
+BCommutativeP.     BaseIso3    ::= "x*x"       ;
 BAssociativeS.     BaseIso4    ::= "|+|+|"              ;
 BAssociativeP.     BaseIso5    ::= "|*|*|"              ;
 BSplitS.           BaseIso6    ::= "-+<"                ;
 BSplitP.           BaseIso7    ::= "-*<"                ;
-BDistributiveZero. BaseIso8    ::= "distributiveZero"   ;
-BDistributivePlus. BaseIso9    ::= "distributivePlus"   ;
+BDistributiveZero. BaseIso8    ::= "^0^"   ;
+BDistributivePlus. BaseIso9    ::= "^+^"   ;
 --
 IEliminate.        Iso0   ::= "#"     BaseIso            ;
 IIntroduce.        Iso1   ::= "'"     BaseIso            ;

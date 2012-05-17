@@ -18,7 +18,7 @@ VLeft.        Value1    ::= "L" Value2               ;
 VRight.       Value2    ::= "R" Value3               ;
 VNegate.      Value3    ::= "-" Value4               ;
 VReciprocate. Value4    ::= "/" Value5             ;
-VUnit.        Value5    ::= "u"                      ;
+VUnit.        Value5    ::= "()"                      ;
 
 _.  Value      ::= Value0        ;
 _.  Value0     ::= Value1        ;
