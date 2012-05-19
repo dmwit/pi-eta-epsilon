@@ -13,12 +13,13 @@ bnfc [lbnf|
 antiquote "[" ":" ":]" ;
 
 --Iso                                               
-VTuple.       Value0    ::= "(" Value1 "," Value1 ")" ;
-VLeft.        Value1    ::= "L" Value2               ;
-VRight.       Value2    ::= "R" Value3               ;
-VNegate.      Value3    ::= "-" Value4               ;
-VReciprocate. Value4    ::= "/" Value5             ;
-VUnit.        Value5    ::= "()"                      ;
+VDummy.       Value0    ::= "&" Value1 "," Value1 "&" ;
+VTuple.       Value1    ::= Value1 "," Value2  ;
+VLeft.        Value2    ::= "L" Value3               ;
+VRight.       Value3    ::= "R" Value4               ;
+VNegate.      Value4    ::= "-" Value5               ;
+VReciprocate. Value5    ::= "/" Value6             ;
+VUnit.        Value6    ::= "1"                      ;
 
 _.  Value      ::= Value0        ;
 _.  Value0     ::= Value1        ;
@@ -26,7 +27,8 @@ _.  Value1     ::= Value2        ;
 _.  Value2     ::= Value3        ;
 _.  Value3     ::= Value4        ;
 _.  Value4     ::= Value5        ;
-_.  Value5     ::= "(" Value ")" ;    
+_.  Value5     ::= Value6        ;
+_.  Value6     ::= "(" Value ")" ;    
 
 
 TDouble.  Typ  ::= "double" ;

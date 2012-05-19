@@ -33,6 +33,8 @@ import Control.Concatenative hiding (sp)
 
 --main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
+
+
 main = defaultMain tests
 
 mkParserTest f input expected = case f input of
@@ -218,25 +220,33 @@ tests = [
                 --pprParserInvPropL "Value" pprVValue parseVValue, 
                 --pprParserInvPropR "Value" pprVValue parseVValue
             ],
-            testGroup "iso eval " [
-                isoTest "Eliminate IdentityS"         ([iso| # <=+=> |]) [],
-                isoTest "Introduce IdentityS"         ([iso| ' <=+=> |]) [[value| R ()|]],                
-                isoTest "Eliminate CommutativeS"      ([iso| #  x+x  |]) [],
-                isoTest "Introduce CommutativeS"      ([iso| '  x+x  |]) [[value| R ()|]],
-                isoTest "Eliminate AssociativeS"      ([iso| # |+|+| |]) [],
-                isoTest "Introduce AssociativeS"      ([iso| ' |+|+| |]) [[value| R ()|]],
-                isoTest "Eliminate SplitS"            ([iso| #  -+<  |]) [],
-                isoTest "Introduce SplitS"            ([iso| '  -+<  |]) [[value| R ()|]],
-                isoTest "Eliminate IdentityP"         ([iso| # <=*=> |]) [],           
-                isoTest "Introduce IdentityP"         ([iso| ' <=*=> |]) [[value| ((), ()) |]],
-                isoTest "Eliminate CommutativeP"      ([iso| #  x*x  |]) [],           
-                isoTest "Introduce CommutativeP"      ([iso| '  x*x  |]) [[value| R ()|]],                
-                isoTest "Eliminate AssociativeP"      ([iso| # |*|*| |]) [],           
-                isoTest "Introduce AssociativeP"      ([iso| ' |*|*| |]) [[value| R ()|]],
-                isoTest "Eliminate DistributiveZero"  ([iso| #  ^0^  |]) [],           
-                isoTest "Introduce DistributiveZero"  ([iso| '  ^0^  |]) [[value| R ()|]],
-                isoTest "Eliminate DistributivePlus"  ([iso| #  ^+^  |]) [],           
-                isoTest "Introduce DistributivePlus"  ([iso| '  ^+^  |]) [[value| R ()|]]
+            testGroup "iso eval " [                                   
+                isoTest "Eliminate IdentityS"         [iso| # <=+=> |] [value| R 1         |] [[value| 1       |]],
+                isoTest "Introduce IdentityS"         [iso| ' <=+=> |] [value| 1           |] [[value| R 1     |]],                
+                isoTest "Eliminate CommutativeS"      [iso| #  x+x  |] [value| R 1         |] [[value| L 1     |]],
+                isoTest "Introduce CommutativeS"      [iso| '  x+x  |] [value| R 1         |] [[value| L 1     |]],
+                isoTest "Eliminate AssociativeS"      [iso| # |+|+| |] [value| R (L 1)     |] [[value| L (R 1) |]],
+                isoTest "Introduce AssociativeS"      [iso| ' |+|+| |] [value| L (R 1)     |] [[value| R (L 1) |]],
+                isoTest "Eliminate SplitS"            [iso| #  -+<  |] [value| 1           |] [],
+                isoTest "Introduce SplitS"            [iso| '  -+<  |] [value| 1           |] [],
+                isoTest "Eliminate IdentityP"         [iso| # <=*=> |] [value| (1, 1)      |] [[value| 1           |]],           
+                isoTest "Introduce IdentityP"         [iso| ' <=*=> |] [value| 1           |] [[value| (1, 1)      |]],
+                isoTest "Eliminate CommutativeP"      [iso| #  x*x  |] [value| (R 1, L 1)  |] [[value| (L 1, R 1)  |]],           
+                isoTest "Introduce CommutativeP"      [iso| '  x*x  |] [value| (R 1, L 1)  |] [[value| (L 1, R 1)  |]],           
+                isoTest "Eliminate AssociativeP"      [iso| # |*|*| |] [value| (1, (1, 1)) |] [[value| ((1, 1), 1) |]],           
+                isoTest "Introduce AssociativeP"      [iso| ' |*|*| |] [value| ((1, 1), 1) |] [[value| (1, (1, 1)) |]],
+                isoTest "Eliminate DistributiveZero"  [iso| #  ^0^  |] [value| 1           |] [],           
+                isoTest "Introduce DistributiveZero"  [iso| '  ^0^  |] [value| 1           |] [],
+                isoTest "Eliminate DistributivePlus"  [iso| #  ^+^  |] [value| ((L 1), 1)  |] [[value| L (1, 1)  |]],           
+                isoTest "Introduce DistributivePlus"  [iso| '  ^+^  |] [value| L (1, 1)    |] [[value| ((L 1), 1)|]]
+            ],                                                        
+            testGroup "term eval " [
+                termTest "TCompose" [term| < # |+|+| ; < ' <=+=> |] [value| L (1, 1) |] [[value| R (L (L (1, 1))) |]],                
+                termTest "TTimes"   [term| < # |+|+| * < ' <=+=> |] [value| (L 1, 1) |] [[value| (L (L 1), R 1)   |]],
+                termTest "TPlus"    [term| < # |+|+| + < ' <=+=> |] [value| R (L 1)  |] [[value| R (R (L 1))      |]],
+                termTest "TPlus"    [term| < # |+|+| + < ' <=+=> |] [value| L (L 1)  |] [[value| L (L (L 1))      |]],
+                termTest "TBase"    [term| < # |+|+|             |] [value| L 1      |] [[value| L (L 1)          |]],
+                termTest "TId"      [term| <=>                   |] [value| 1        |] [[value| 1                |]]
             ]
             
         ]
@@ -263,21 +273,21 @@ test_parseTermIso_11 = IIntroduce BAssociativeP @?= [iso| '  |*|*| |]
 -- | My bad.
 -- | Term Tests                
 --------------------------------------------------------------------------------
-test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS)    @?= [term| (< (# |+|+|)) ; (< (' |+|+|)) |] 
-test_parseTermTerm_13 = TTimes   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) * (< (' |+|+|)) |] 
-test_parseTermTerm_14 = TPlus    (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)     @?= [term| (< (# <=+=>)) + (< (' |+|+|)) |] 
-test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                                  @?= [term| < # |*|*|                     |] 
-test_parseTermTerm_16 = TId                                                                        @?= [term| <=>                             |] 
+test_parseTermTerm_12 = TCompose (TBase $ IEliminate $ BAssociativeS) (TBase $ IIntroduce $ BAssociativeS)   @?= [term| < (# |+|+|) ; (< (' |+|+|)) |] 
+test_parseTermTerm_13 = TTimes   (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)   @?= [term| < (# <=+=>) * (< (' |+|+|)) |] 
+test_parseTermTerm_14 = TPlus    (TBase $ IEliminate $ BIdentityS)    (TBase $ IIntroduce $ BAssociativeS)   @?= [term| < (# <=+=>) + (< (' |+|+|)) |] 
+test_parseTermTerm_15 = (TBase $ IEliminate $ BAssociativeP)                                                 @?= [term| < # |*|*|                     |] 
+test_parseTermTerm_16 = TId                                                                                  @?= [term| <=>                             |] 
 
 -- | Value Tests
 --------------------------------------------------------------------------------
 ------------------------------------------I am really testing the Unit here. Watch this guys. Watch this. This is what Unit testing is all about!
-test_parseValue_0 = VTuple  VUnit VUnit @?= [value| ((),()) |] 
-test_parseValue_1 = VLeft   VUnit       @?= [value| L ()    |] 
-test_parseValue_2 = VRight  VUnit       @?= [value| R ()    |] 
-test_parseValue_3 = VNegate VUnit       @?= [value| - ()    |] 
-test_parseValue_4 = VReciprocate VUnit  @?= [value| / ()    |] 
-test_parseValue_5 = VUnit               @?= [value| ()      |] 
+test_parseValue_0 = VTuple  VUnit VUnit @?= [value| (1,1) |] 
+test_parseValue_1 = VLeft   VUnit       @?= [value| L 1    |] 
+test_parseValue_2 = VRight  VUnit       @?= [value| R 1    |] 
+test_parseValue_3 = VNegate VUnit       @?= [value| - 1    |] 
+test_parseValue_4 = VReciprocate VUnit  @?= [value| / 1    |] 
+test_parseValue_5 = VUnit               @?= [value| 1      |] 
 
 
 
@@ -289,17 +299,22 @@ termEval i x = topLevel x i
 isoEval :: UValue -> P.Iso -> [UValue]
 isoEval i x = termEval i $ P.Base x
 
-isoEval' = isoEval unit . to
+isoEval'  = isoEval  unit . to
+termEval' = termEval unit . to
 
 toUV = toP . to
 
-isoTest :: String -> Iso -> [Value] -> Test.Framework.Test
-isoTest name iso value = testCase name $ assertBool name $ all id
-     $ zipWith (closedAndEqual) (isoEval' iso) (map toUV value)
+isoTest :: String -> Iso -> Value -> [Value] -> Test.Framework.Test
+isoTest name iso input outputs = testCase name $ assertBool name $ (all id
+     $ zipWith (closedAndEqual) actual expected) && (length actual == length expected) where
+         actual   = isoEval (toUV input) (to iso)
+         expected = map toUV outputs :: [UValue]
 
-
-
-
+termTest :: String -> Term -> Value -> [Value] -> Test.Framework.Test
+termTest name term input outputs = testCase name $ assertBool name $ (all id
+  $ zipWith (closedAndEqual) actual expected) && (length actual == length expected) where
+      actual   = termEval (toUV input) (to term)
+      expected = map toUV outputs :: [UValue]
 
         
 --Should make sure that all adjoints composed with each are inverse

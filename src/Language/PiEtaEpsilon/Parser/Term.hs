@@ -15,11 +15,11 @@ import Language.Haskell.TH.Quote
 
 
 instance To M.Term Term where
-    to (M.TBase     x   ) = Base     (to x)
-    to (M.TId       ) = Id -- I could also make a To Ident String instance       
-    to (M.TCompose x y ) = (to x) ::: (to y)       
-    to (M.TPlus       x y ) = (to x) :+: (to y)      
-    to (M.TTimes      x y ) = (to x) :*: (to y)
+    to (M.TBase          x) = Base     (to x)
+    to (M.TId             ) = Id -- I could also make a To Ident String instance       
+    to (M.TCompose     x y) = (to x) ::: (to y)       
+    to (M.TPlus        x y) = (to x) :+: (to y)      
+    to (M.TTimes       x y) = (to x) :*: (to y)
 
 
 instance To M.Iso Iso where

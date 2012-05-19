@@ -305,7 +305,39 @@ addSub1 = CommuteTimes
 counter :: (Int, Int) :<=> (Int, Int)
 counter = TracePlus counterLoop
 
-counterLoop = Factor :.: (Id :*: UnfoldN) :.: CommuteTimes  --(UnfoldN :*: Id) 
+--counterLoop = Factor :.: (FoldN :*: Id) :.: CommuteTimes :.: (UnfoldN :*: Id) :.: Distribute :.: 
+--                (Id :+: CommuteTimes)
+
+firstS  x = (x :+: Id)
+secondS x = (Id :+: x)
+
+first x = (x :*: Id)
+
+counterLoop = (versor Factor $ versor (first FoldN) CommuteTimes) :.: secondS CommuteTimes
+
+------------------------------------------------------------------------------------
+--Adder
+------------------------------------------------------------------------------------
+
+type StartState  = (Int, (Int, Int))
+type StuckState  = (Int, (Int, Int))
+type AdderInput  = (Either StartState StuckState)
+type AdderOutput = (Int, (Int, Int)) 
+
+adder :: AdderInput :<=> AdderOutput
+adder = TracePlus adderLoop
+
+type LoopInput = (Int, (Int, Int))
+
+--I need to move the eithers around. 
+adderLoop :: Either LoopInput AdderInput :<=> Either LoopInput AdderOutput
+--adderLoop =  AssocPlusL :.: firstS (Factor :.: (first FoldN) :.: undefined) :.: undefined
+adderLoop = undefined
+--firstS (Factor :.: undefined) :.: undefined -- (firstS ) :.: undefined
+
+tester = AssocPlusL :.: firstS (Factor :.: (first FoldN) :.: sw n )
+-- :.: Factor :.: first FoldN 
+--                :.: undefined
 
 --------------------------------------------------------------------------
 -- Iterating a list of nats.
