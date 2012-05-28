@@ -12,6 +12,7 @@ import qualified Language.PiEtaEpsilon.BNFMeta.Term as M
 import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
+import Control.Monad
 
 
 instance To M.Term Term where
@@ -39,18 +40,6 @@ instance To M.BaseIso IsoBase where
     to M.BDistributivePlus = DistributivePlus
 
 
-
-
-
-{-
--- isomorphisms {{{2
-data IsoBase
-	= IdentityS | CommutativeS | AssociativeS | SplitS
-	| IdentityP | CommutativeP | AssociativeP | SplitP
-	| DistributiveZero | DistributivePlus
-	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
--}
-
 {-
 pIsoBase =  pIdentityS
         <|> pIdentityP
@@ -61,76 +50,41 @@ pIsoBase =  pIdentityS
         <|> pSplitS
         <|> pSplitP
 
-pPlus = undefined
-pZero = undefined
+pIdentityS    = return IdentityS    << string "<=+=>" 
+pIdentityP    = return IdentityP    << string "<=*=>" 
+pCommutativeS = return CommutativeS << string "x+x"   
+pCommutativeP = return CommutativeP << string "x*x"   
+pAssociativeS = return AssociativeS << string "|+|+|" 
+pAssociativeP = return AssociativeP << string "|*|*|" 
+pSplitS       = return SplitS       << string ">+-"   
+pSplitP       = return SplitP       << string ">*-"   
 
-pTimes = undefined 
-pOne   = undefined
-
-pIdentityS = do
-    permute (,) <$$> pPlus <||> pZero
-    return IdentityS
-    
-pIdentityP = do
-    permute (,) <$$> pTimes <||> pOne
-    return IdentityP    
-    
-pCommutativeS = do
-    string "X"
-    return CommutativeS
-    
-pCommutativeP = do
-    string "X"
-    return CommutativeP
-    
-pAssociativeS = do
-   string "]"
-   return AssociativeS
-    
-pAssociativeP = do
-    string "["
-    return AssociativeP
-    
-pSplitS = do
-    string "\"
-    return 
-    
-pSplitP       = do
-
-{-
-data Iso
-	= Eliminate IsoBase
-	| Introduce IsoBase
-	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
--}
 
 pIso =  pEliminate 
     <|> pIntroduce 
 
-pEliminate = undefined
-pIntroduce = undefined
+pEliminate = (return . Eliminate) =<< pIsoBase << spaces << string "#"
+pIntroduce = (return . Introduce) =<< pIsoBase << spaces << string "'"
 
-{-
--- Term {{{2
-data Term
-	= Base Iso
-	| Id
-	| Term ::: Term
-	| Term :+: Term
-	| Term :*: Term
-	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
+pTerm =  pIsoBase
+	 <|> pId
+	 <|> pCompose
+	 <|> pPlus
+	 <|> pTimes
 
--}
+pIsoBase = (return . Base) =<< pIso << spaces << string "<"
+pId      = return Id << string "<=>"
+binaryTerm term token = do
+    l <- expr
+    spaces
+    string token
+    spaces 
+    r <- expr
+    return $ term l r
 
-expr =  pIsoBase
-	<|> pId
-	<|> pElement
-	<|> pPlus
-	<|> pTimes
-	
-pIsoBase = undefined
-pId      = undefined
-pElement = undefined
-pPlus    = undefined
-pTimes   = undefined
+pCompose = binaryTerm Compose "."    
+pPlus    = binaryTerm Plus    "+"
+pTimes   = binaryTerm Plus    "*"
+
+expr = parens pTerm <|> pTerm
 -}

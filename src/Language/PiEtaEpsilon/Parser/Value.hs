@@ -7,7 +7,7 @@ import Text.Parsec
 import Text.Parsec.Expr
 import Control.Monad.Reader
 import Prelude hiding (negate, Left, Right)
-import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value)
+import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value, pValue)
 import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
 import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
@@ -30,14 +30,12 @@ toP (Fix ( Negate       x)) = negate (toP x)
 toP (Fix ( Reciprocate  x)) = reciprocate (toP x)
 toP (Fix Unit)                  = unit
 
----------------------------------------------Value----------------------------------------------
 {-
-valueExpr = expr
-
-expr = parens expr'
-    <|> expr'
+---------------------------------------------Value----------------------------------------------
+expr = parens pValue
+    <|> pValue
     
-expr' =  pUnit
+pValue =  pUnit
 	 <|> pLeft        
 	 <|> pRight       
 	 <|> pTuple       
@@ -45,7 +43,7 @@ expr' =  pUnit
 	 <|> pReciprocate
 	
 pUnit = do
-    string "()" 
+    string "u" 
     return unit
      
 pLeft = do
@@ -79,7 +77,7 @@ pReciprocate = do
     t <- expr
     return $ reciprocate t
     
--}    
+ -}
     
     
     

@@ -60,10 +60,6 @@ _.  BaseIso8  ::= BaseIso9        ;
 _.  BaseIso9  ::= "(" BaseIso ")" ;
 
 
-
-
-
-
 TDouble.  Typ  ::= "double" ;
 
 -- pragmas
