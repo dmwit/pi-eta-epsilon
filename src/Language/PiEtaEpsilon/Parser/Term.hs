@@ -14,6 +14,7 @@ import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 import Control.Monad
 
+parseTerm = M.pTerm . M.myLexer 
 
 instance To M.Term Term where
     to (M.TBase          x) = Base     (to x)

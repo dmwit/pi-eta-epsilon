@@ -14,6 +14,7 @@ import GHC.Generics hiding ((:*:))
 import Data.Data
 import Data.Typeable
 import Test.QuickCheck
+import Data.Default
 
 -- types {{{1
 -- Type {{{2
@@ -57,6 +58,10 @@ data Term
 	| Term :+: Term
 	| Term :*: Term
 	deriving (Eq, Ord, Show, Read, Data, Typeable, Generic)
+	
+instance Default Term where
+    def = Id
+	
 
 -- convenience names for Values {{{1
 class Particle a where

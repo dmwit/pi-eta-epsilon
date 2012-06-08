@@ -1,4 +1,0 @@
---pull in all the state stuff plus the Evaluator
---I think the way to think of this is that it is sending a message
---
---I'm bored with this stuff

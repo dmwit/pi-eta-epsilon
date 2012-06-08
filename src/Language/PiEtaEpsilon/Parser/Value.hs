@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction, MultiParamTypeClasses, TypeSynonymInstances, 
     FunctionalDependencies, FlexibleInstances, TemplateHaskell, QuasiQuotes #-}
-module Language.PiEtaEpsilon.Parser.Value (toP) where
+module Language.PiEtaEpsilon.Parser.Value (toP, parseValue) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
@@ -13,6 +13,8 @@ import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 import Language.PiEtaEpsilon.Parser.Classes
+
+parseValue = M.pValue . M.myLexer 
 
 instance To M.Value Value where
     to (VTuple       x y) = Fix $ Tuple (to x) (to y)

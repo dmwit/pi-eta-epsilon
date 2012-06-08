@@ -6,6 +6,8 @@ import Language.PiEtaEpsilon.Evaluator
 import Control.Unification.Types   -- necessary to compile here!
 import Control.Unification.IntVar  -- necessary to compile here!
 
+import Language.PiEtaEpsilon.Pretty.Class
+
 import Data.Functor.Fixedpoint
 import Prelude hiding (Left, Right)
 
@@ -25,8 +27,6 @@ instance Pretty Value where
     
 -}
 
--------------------------------------------Class------------------------------------------
-class PPrint a where ppr :: a -> String
 
 
 
@@ -68,9 +68,16 @@ instance PPrint Type where
 	ppr (Negative   y) = parens $ sepBy "-" () y
 	ppr (Reciprocal y) = parens $ sepBy "/" () y
 
-instance (PPrint a) => PPrint [a] where
-     ppr = undefined
---     ppr (x:xs) = boxes $ sepBy ","  (ppr x) (fmap (ppr) xs)
+instance PPrint String where
+    ppr = id
+    
+instance PPrint [String] where
+    ppr = show
+
+instance PPrint [UValue] where
+     --ppr = error "ppr [a]"
+     ppr (x:xs) = boxes $ sepBy ","  (ppr x) (fmap (ppr) xs)
+     ppr []     = "[]"
 
 instance (PPrint a, PPrint b, PPrint String) => PPrint (a,b) where
      ppr (x,y) = parens $ sepBy "," (ppr x) (ppr y)
