@@ -42,7 +42,6 @@ import System.Console.Shell.Backend.Haskeline
 import Language.PiEtaEpsilon.Interactive.StatementParser
 import Language.LBNF.Runtime
 import Data.Default
-import Debug.Trace.Utils
 
 defaultBackend = haskelineBackend
 
