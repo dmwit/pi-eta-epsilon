@@ -27,18 +27,18 @@ library
                     template-haskell >= 2.6 && < 2.8,
                     transformers >= 0.2 && < 0.4,
                     unification-fd >= 0.7 && < 0.8,
-                    BNFC-meta == 0.3.0.2,
+                    BNFC-meta >= 0.3 && < 0.4,
                     doctest >= 0.6 && < 0.8,
                     test-framework-quickcheck2 >= 0.2 && < 0.3,
                     test-framework-hunit >= 0.2 && < 0.3,
                     test-framework >= 0.6 && < 0.7,
                     checkers >= 0.2 && < 0.4,
                     DebugTraceHelpers >= 0.12 && < 1.0,
-                    Shellac-haskeline == 0.2.0.1,
-                    Shellac == 0.9.5.1,
-                    containers == 0.4.2.1,
-                    split == 0.1.4.2,
-                    data-default 
+                    Shellac-haskeline >= 0.2 && < 0.3,
+                    Shellac >= 0.9 && < 0.10,
+                    containers >= 0.4 && < 0.5,
+                    split >= 0.1 && < 0.2,
+                    data-default
 
 
 test-suite tests
@@ -60,13 +60,13 @@ test-suite tests
                     template-haskell >= 2.6 && < 2.8,
                     transformers >= 0.2 && < 0.4,
                     unification-fd >= 0.7 && < 0.8,
-                    BNFC-meta == 0.3.0.2,
-                    concatenative == 1.0.1,
+                    BNFC-meta >= 0.3 && < 0.4,
+                    concatenative >= 1.0 && < 1.1,
                     data-default,
-                    split == 0.1.4.2,
-                    Shellac-haskeline == 0.2.0.1,
-                    Shellac == 0.9.5.1,
-                    containers == 0.4.2.1
+                    split >= 0.1 && < 0.2,
+                    Shellac-haskeline >= 0.2 && < 0.3,
+                    Shellac >= 0.9 && < 0.10,
+                    containers >= 0.4 && < 0.5
 
 test-suite doctests
    type:            exitcode-stdio-1.0
