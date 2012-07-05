@@ -30,6 +30,7 @@ import Data.Maybe
 import Prelude hiding (pi)
 import Test.Framework (Test)
 import Control.Concatenative hiding (sp)
+import Language.LBNF.Runtime
 
 --main = quickCheck $ roundTrip ppr   (fromRight . parseType)
 
@@ -119,28 +120,38 @@ instance Arbitrary Value where
 
 --TODO find a better home :(
 parseTTerm :: String -> Term
-parseTTerm  x = error "I can only using the quasiquoter for parsing :("  -- $((quoteExp G.grammar)  x)
+parseTTerm  x = case (pTerm $ Language.PiEtaEpsilon.BNFMeta.Term.myLexer x) of 
+    Ok  t -> t
+    Bad s -> error s 
 
 pprTTerm :: Term -> String
-pprTTerm       = error "I haven't bothered to do to write pprTTerm but is should be easy"
+pprTTerm = printTree
 
 parseBaseIso :: String -> BaseIso
-parseBaseIso x = error "I can only using the quasiquoter for parsing :(" -- $([| (quoteExp G.grammar) x |])
+parseBaseIso x = case (pBaseIso $ Language.PiEtaEpsilon.BNFMeta.Term.myLexer x) of 
+    Ok  t -> t
+    Bad s -> error s 
 
 pprBaseIso :: BaseIso -> String
-pprBaseIso     = error "I haven't bothered to do to write pprBaseIso but is should be easy"
+pprBaseIso     = printTree
 
 parseVValue :: String -> Value
-parseVValue x  = error "I can only using the quasiquoter for parsing :(" -- $([| (quoteExp G.grammar) x |])
+parseVValue x  = case (pValue $ Language.PiEtaEpsilon.BNFMeta.Value.myLexer x) of 
+    Ok  t -> t
+    Bad s -> error s 
+
 
 pprVValue :: Value -> String
-pprVValue      = error "I haven't bothered to do to write pprVValue but is should be easy"
+pprVValue = printTree
 
 parseIso :: String -> Iso
-parseIso x     = error "I can only using the quasiquoter for parsing :(" -- $([| (quoteExp G.grammar) x |])
+parseIso x     = case (pIso $ Language.PiEtaEpsilon.BNFMeta.Term.myLexer x) of 
+    Ok  t -> t
+    Bad s -> error s 
+
 
 pprIso :: Iso -> String
-pprIso         = error "I haven't bothered to do to write pprIso but is should be easy"
+pprIso = printTree
 
 --pprParserInvPropL :: String -> (a -> String) -> (String -> a) -> Test.QuickCheck.Test
 pprParserInvPropL name ppr parser = testProperty ("a ppr "++ name ++" is a parsed " ++ name) (roundTrip ppr parser)
@@ -188,23 +199,23 @@ tests = [
                 testCase "test_parseTermIsobase_7" test_parseTermIsobase_7,
                 testCase "test_parseTermIsobase_8" test_parseTermIsobase_8,
                 testCase "test_parseTermIsobase_9" test_parseTermIsobase_9,
-                --pprParserInvPropL "BaseIso" pprBaseIso parseBaseIso, 
-                --pprParserInvPropR "BaseIso" pprBaseIso parseBaseIso,
+                pprParserInvPropL "BaseIso" pprBaseIso parseBaseIso, 
+                pprParserInvPropR "BaseIso" pprBaseIso parseBaseIso,
 -- | Iso Tests                
 --------------------------------------------------------------------------------
                 testCase "test_parseTermIsobase_10" test_parseTermIso_10,
                 testCase "test_parseTermIsobase_11" test_parseTermIso_11,
-                --pprParserInvPropL "Iso" pprIso parseIso, 
-                --pprParserInvPropR "Iso" pprIso parseIso,
+                pprParserInvPropL "Iso" pprIso parseIso, 
+                pprParserInvPropR "Iso" pprIso parseIso,
 -- | Term Tests                
 --------------------------------------------------------------------------------
                 testCase "test_parseTermIsobase_12" test_parseTermTerm_12,
                 testCase "test_parseTermIsobase_13" test_parseTermTerm_13,
                 testCase "test_parseTermIsobase_14" test_parseTermTerm_14,
                 testCase "test_parseTermIsobase_15" test_parseTermTerm_15,
-                testCase "test_parseTermIsobase_16" test_parseTermTerm_16
-                --pprParserInvPropL "Term" pprTTerm parseTTerm
-                --pprParserInvPropR "Term" pprTTerm parseTTerm -- this test diverges for some reason
+                testCase "test_parseTermIsobase_16" test_parseTermTerm_16,
+                --pprParserInvPropL "Term" pprTTerm parseTTerm, -- this test diverges for some reason
+                pprParserInvPropR "Term" pprTTerm parseTTerm 
             ],
             
 --            
@@ -216,9 +227,9 @@ tests = [
                 testCase "test_parseValue_2" test_parseValue_2,
                 testCase "test_parseValue_3" test_parseValue_3,
                 testCase "test_parseValue_4" test_parseValue_4,
-                testCase "test_parseValue_5" test_parseValue_5
-                --pprParserInvPropL "Value" pprVValue parseVValue, 
-                --pprParserInvPropR "Value" pprVValue parseVValue
+                testCase "test_parseValue_5" test_parseValue_5,
+                pprParserInvPropL "Value" pprVValue parseVValue, 
+                pprParserInvPropR "Value" pprVValue parseVValue
             ],
             testGroup "iso eval " [                                   
                 isoTest "Eliminate IdentityS"         [iso| # <=+=> |] [value| R 1         |] [[value| 1       |]],

@@ -1,18 +1,20 @@
 {-# LANGUAGE NoMonomorphismRestriction, MultiParamTypeClasses, TypeSynonymInstances, 
     FunctionalDependencies, FlexibleInstances, TemplateHaskell, QuasiQuotes #-}
-module Language.PiEtaEpsilon.Parser.Value (toP) where
+module Language.PiEtaEpsilon.Parser.Value (toP, parseValue) where
 import Language.PiEtaEpsilon.Token
 import Language.PiEtaEpsilon.Syntax
 import Text.Parsec   
 import Text.Parsec.Expr
 import Control.Monad.Reader
 import Prelude hiding (negate, Left, Right)
-import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value)
+import Language.PiEtaEpsilon.BNFMeta.Value hiding (Value, pValue)
 import qualified Language.PiEtaEpsilon.BNFMeta.Value as M
 import Data.Functor.Fixedpoint
 import qualified Language.LBNF.Grammar as G
 import Language.Haskell.TH.Quote
 import Language.PiEtaEpsilon.Parser.Classes
+
+parseValue = M.pValue . M.myLexer 
 
 instance To M.Value Value where
     to (VTuple       x y) = Fix $ Tuple (to x) (to y)
@@ -30,14 +32,12 @@ toP (Fix ( Negate       x)) = negate (toP x)
 toP (Fix ( Reciprocate  x)) = reciprocate (toP x)
 toP (Fix Unit)                  = unit
 
----------------------------------------------Value----------------------------------------------
 {-
-valueExpr = expr
-
-expr = parens expr'
-    <|> expr'
+---------------------------------------------Value----------------------------------------------
+expr = parens pValue
+    <|> pValue
     
-expr' =  pUnit
+pValue =  pUnit
 	 <|> pLeft        
 	 <|> pRight       
 	 <|> pTuple       
@@ -45,7 +45,7 @@ expr' =  pUnit
 	 <|> pReciprocate
 	
 pUnit = do
-    string "()" 
+    string "u" 
     return unit
      
 pLeft = do
@@ -79,7 +79,7 @@ pReciprocate = do
     t <- expr
     return $ reciprocate t
     
--}    
+ -}
     
     
     

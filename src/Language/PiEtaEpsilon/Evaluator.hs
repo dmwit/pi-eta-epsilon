@@ -17,10 +17,14 @@ import Control.Unification.IntVar
 import Data.Function
 import Prelude hiding (Either(..), negate)
 import GHC.Generics hiding ((:*:))
+import Data.Default
 
 -- types {{{1
 -- UValue, Context, MachineState {{{2
 type UValue = UTerm ValueF IntVar
+
+instance Default UValue where
+    def = unit
 
 data Context
 	= Box
@@ -29,6 +33,9 @@ data Context
 	| LProduct Context Term UValue | RProduct Term UValue Context
 	deriving (Show)
 
+instance Default Context where
+    def = Box
+
 data MachineState = MachineState
 	{ forward     :: Bool
 	, descending  :: Bool
@@ -36,6 +43,15 @@ data MachineState = MachineState
 	, output      :: UValue
 	, context     :: Context
 	} deriving (Show)
+	
+instance Default MachineState where
+    def = MachineState {
+              forward    = True
+        	, descending = True
+        	, term       = def
+        	, output     = def 
+        	, context    = def
+        }
 
 -- PEET {{{2
 newtype PEET m a = PEET { unPEET :: IntBindingT ValueF (LogicT m) a }
@@ -201,9 +217,14 @@ eval m
 	| isFinal m = freeze (output m) >>= \v -> return m { output = v }
 	| otherwise = stepEval m >>= eval
 	where freeze = runIdentityT . applyBindings
+	
+runEval = map output . runPEE . eval	
+	
+topLevelWithState :: MachineState -> Term -> UValue -> [UValue]
+topLevelWithState m t v = runEval $ m { term = t, output = v }
 
 topLevel :: Term -> UValue -> [UValue]
-topLevel t v = map output . runPEE . eval $ initialize t v
+topLevel t v = runEval $ initialize t v
 
 nSteps :: Term -> UValue -> Int -> [(MachineState, IntBindingState ValueF)]
 nSteps t v n = observeAll . runIntBindingT . unPEET $ do
